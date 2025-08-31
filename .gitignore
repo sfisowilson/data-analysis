@@ -49,11 +49,12 @@ Thumbs.db
 *.tmp
 
 # Large data files (keep structure but ignore large files)
+# Note: For Streamlit Cloud deployment, we need the CSV files
 # output/*.csv
 # Data Hand-Over/*.xlsx
 
-# Streamlit
-.streamlit/
+# Streamlit (allow config for deployment)
+# .streamlit/
 
 # Cache
 .cache/
