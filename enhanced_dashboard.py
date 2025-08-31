@@ -105,26 +105,53 @@ class AdvancedStockDashboard:
         
     @st.cache_data
     def load_data(_self, filename):
-        """Load and cache data files with better error handling."""
+        """Load and cache data files with improved date handling."""
         file_path = _self.output_folder / filename
         if file_path.exists():
             try:
                 df = pd.read_csv(file_path, low_memory=False)
-                # Convert date columns properly and handle Excel date issues
+                
+                # Fix date columns - handle Excel date issues and fin_period conversion
                 for col in df.columns:
-                    if 'date' in col.lower() and df[col].dtype == 'object':
-                        # Try to convert dates, handling Excel serial dates
-                        df[col] = pd.to_datetime(df[col], errors='coerce')
-                        # Fix dates that are showing as 1970 (likely Excel serial date issues)
-                        if df[col].dt.year.min() < 1900:
-                            # Try to parse as Excel serial dates
+                    if 'date' in col.lower():
+                        if df[col].dtype == 'object':
+                            df[col] = pd.to_datetime(df[col], errors='coerce')
+                        
+                        # Check if dates are invalid (showing as 1900-01-01 or similar)
+                        if df[col].notna().any():
+                            valid_dates = df[col].dropna()
+                            if len(valid_dates) > 0:
+                                # If most dates are 1900-01-01, they're likely corrupted
+                                year_1900_count = (valid_dates.dt.year == 1900).sum()
+                                if year_1900_count > len(valid_dates) * 0.8:
+                                    # Mark these dates as invalid
+                                    df[col] = pd.NaT
+                
+                # Convert fin_period to proper dates if available
+                if 'fin_period' in df.columns:
+                    # Create a proper date column from fin_period (YYYYMM format)
+                    fin_period_series = pd.to_numeric(df['fin_period'], errors='coerce')
+                    valid_periods = fin_period_series.dropna()
+                    
+                    if len(valid_periods) > 0:
+                        # Convert YYYYMM to datetime
+                        df['period_date'] = pd.NaT
+                        for idx in valid_periods.index:
                             try:
-                                numeric_dates = pd.to_numeric(df[col], errors='coerce')
-                                # Excel epoch starts at 1900-01-01
-                                excel_epoch = pd.Timestamp('1900-01-01')
-                                df[col] = excel_epoch + pd.to_timedelta(numeric_dates, unit='D')
+                                year = int(valid_periods.loc[idx] // 100)
+                                month = int(valid_periods.loc[idx] % 100)
+                                if 1 <= month <= 12 and year >= 2000:
+                                    df.loc[idx, 'period_date'] = pd.Timestamp(year=year, month=month, day=1)
                             except:
-                                pass
+                                continue
+                        
+                        # Format period for display
+                        df['period_display'] = df['period_date'].dt.strftime('%Y-%m')
+                        
+                        # If original date column is mostly empty, use period_date as primary date
+                        if 'date' in df.columns and df['date'].isna().sum() > len(df) * 0.8:
+                            df['date'] = df['period_date']
+                
                 return df
             except Exception as e:
                 st.error(f"Error loading {filename}: {str(e)}")
@@ -181,18 +208,30 @@ class AdvancedStockDashboard:
         return df
     
     def get_time_period_data(self, df, date_col, period='monthly'):
-        """Extract time period data for trend analysis."""
-        if date_col not in df.columns:
+        """Extract time period data for trend analysis with improved date handling."""
+        # Try multiple date column options
+        available_date_cols = []
+        for col in ['period_date', 'date', date_col]:
+            if col in df.columns and df[col].notna().any():
+                available_date_cols.append(col)
+        
+        if not available_date_cols:
+            # Use period_display if available
+            if 'period_display' in df.columns:
+                df['period'] = df['period_display']
+                return df
             return df
         
-        df = df.dropna(subset=[date_col])
+        # Use the best available date column
+        best_date_col = available_date_cols[0]
+        df = df.dropna(subset=[best_date_col])
         
         if period == 'monthly':
-            df['period'] = df[date_col].dt.to_period('M')
+            df['period'] = df[best_date_col].dt.to_period('M')
         elif period == 'quarterly':
-            df['period'] = df[date_col].dt.to_period('Q')
+            df['period'] = df[best_date_col].dt.to_period('Q')
         elif period == 'yearly':
-            df['period'] = df[date_col].dt.to_period('Y')
+            df['period'] = df[best_date_col].dt.to_period('Y')
         
         return df
     
@@ -292,17 +331,34 @@ class AdvancedStockDashboard:
             st.metric("Active Data Sources", f"{data_sources}")
         
         with coverage_col3:
-            # Date range
-            if not grn_df.empty and 'date' in grn_df.columns:
-                min_date = grn_df['date'].min()
-                max_date = grn_df['date'].max()
-                if pd.notna(min_date) and pd.notna(max_date):
+            # Date range - use period_date or fin_period for better date display
+            date_range = "N/A"
+            
+            if not grn_df.empty:
+                # Try period_date first, then fin_period
+                if 'period_date' in grn_df.columns and grn_df['period_date'].notna().any():
+                    min_date = grn_df['period_date'].min()
+                    max_date = grn_df['period_date'].max()
                     date_range = f"{min_date.strftime('%Y-%m')} to {max_date.strftime('%Y-%m')}"
-                    st.metric("Data Range", date_range)
-                else:
-                    st.metric("Data Range", "N/A")
-            else:
-                st.metric("Data Range", "N/A")
+                elif 'fin_period' in grn_df.columns and grn_df['fin_period'].notna().any():
+                    fin_periods = grn_df['fin_period'].dropna()
+                    min_period = fin_periods.min()
+                    max_period = fin_periods.max()
+                    
+                    # Convert YYYYMM to readable format
+                    try:
+                        min_year, min_month = divmod(int(min_period), 100)
+                        max_year, max_month = divmod(int(max_period), 100)
+                        date_range = f"{min_year}-{min_month:02d} to {max_year}-{max_month:02d}"
+                    except:
+                        date_range = f"{min_period} to {max_period}"
+                elif 'date' in grn_df.columns and grn_df['date'].notna().any():
+                    min_date = grn_df['date'].min()
+                    max_date = grn_df['date'].max()
+                    if pd.notna(min_date) and pd.notna(max_date):
+                        date_range = f"{min_date.strftime('%Y-%m')} to {max_date.strftime('%Y-%m')}"
+            
+            st.metric("Data Range", date_range)
     
     def create_financial_analytics(self, filters=None):
         """Create comprehensive financial analytics section."""
@@ -341,38 +397,61 @@ class AdvancedStockDashboard:
             self.create_detailed_financial_analysis(grn_df, voucher_df)
     
     def create_financial_trends(self, grn_df):
-        """Create financial trend charts."""
+        """Create financial trend charts with proper date handling."""
         st.subheader("Financial Trends Over Time")
         
-        # Try to use financial period first, then fall back to date
+        # Determine the best time column to use
         time_col = None
-        if 'fin_period' in grn_df.columns:
+        period_display_col = None
+        
+        if 'period_date' in grn_df.columns and grn_df['period_date'].notna().any():
+            time_col = 'period_date'
+            grn_df = grn_df.dropna(subset=['period_date'])
+            grn_df['period_display'] = grn_df['period_date'].dt.strftime('%Y-%m')
+            period_display_col = 'period_display'
+        elif 'fin_period' in grn_df.columns and grn_df['fin_period'].notna().any():
             time_col = 'fin_period'
             grn_df = grn_df[grn_df['fin_period'].notna()]
-            # Convert financial period to a more readable format
-            grn_df['period_display'] = grn_df['fin_period'].astype(str)
-        elif 'date' in grn_df.columns:
+            # Convert YYYYMM to readable format
+            grn_df['period_display'] = grn_df['fin_period'].apply(lambda x: f"{int(x)//100}-{int(x)%100:02d}" if pd.notna(x) else "Unknown")
+            period_display_col = 'period_display'
+        elif 'date' in grn_df.columns and grn_df['date'].notna().any():
             time_col = 'date'
             grn_df['date'] = pd.to_datetime(grn_df['date'], errors='coerce')
             grn_df = grn_df.dropna(subset=['date'])
-            grn_df['period_display'] = grn_df['date'].dt.to_period('M').astype(str)
+            grn_df['period_display'] = grn_df['date'].dt.strftime('%Y-%m')
+            period_display_col = 'period_display'
         
         if time_col and 'nett_grn_amt' in grn_df.columns and not grn_df.empty:
             # Create proper aggregation
-            if time_col == 'fin_period':
+            if time_col == 'period_date':
+                # Group by period_date (already monthly)
+                grn_df['year_month'] = grn_df['period_date'].dt.to_period('M')
+                trends = grn_df.groupby(['year_month', 'period_display'])['nett_grn_amt'].agg(['sum', 'count', 'mean']).reset_index()
+            elif time_col == 'fin_period':
                 # Group by financial period
-                trends = grn_df.groupby('period_display')['nett_grn_amt'].agg(['sum', 'count', 'mean']).reset_index()
+                trends = grn_df.groupby(['fin_period', 'period_display'])['nett_grn_amt'].agg(['sum', 'count', 'mean']).reset_index()
             else:
                 # Group by month for date
                 grn_df['year_month'] = grn_df['date'].dt.to_period('M')
-                trends = grn_df.groupby('year_month')['nett_grn_amt'].agg(['sum', 'count', 'mean']).reset_index()
-                trends['period_display'] = trends['year_month'].astype(str)
+                trends = grn_df.groupby(['year_month', 'period_display'])['nett_grn_amt'].agg(['sum', 'count', 'mean']).reset_index()
             
             if len(trends) > 0:
+                # Sort by period for proper display
+                trends = trends.sort_values(trends.columns[0])
+                
                 # Monthly value trend
                 fig1 = px.line(trends, x='period_display', y='sum',
                               title='GRN Value Trend by Period',
                               labels={'sum': 'Total Value (R)', 'period_display': 'Period'})
+                
+                # Add custom hover template with proper date formatting
+                fig1.update_traces(
+                    hovertemplate='<b>Period:</b> %{x}<br>' +
+                                  '<b>Total Value:</b> R%{y:,.2f}<br>' +
+                                  '<extra></extra>'
+                )
+                
                 fig1.update_layout(
                     height=400,
                     annotations=[
@@ -389,19 +468,22 @@ class AdvancedStockDashboard:
                         )
                     ]
                 )
-                fig1.update_xaxes(tickangle=45)
-                fig1.update_traces(
-                    hovertemplate="<b>Period:</b> %{x}<br>" +
-                                  "<b>Total Value:</b> R%{y:,.2f}<br>" +
-                                  "<b>Data Source:</b> GRN Records<br>" +
-                                  "<extra></extra>"
-                )
-                st.plotly_chart(fig1, width="stretch")
+                fig1.update_xaxes(tickangle=45, title="Period")
+                fig1.update_yaxes(title="Total Value (R)")
+                st.plotly_chart(fig1, use_container_width=True)
                 
                 # Transaction count trend
                 fig2 = px.bar(trends, x='period_display', y='count',
                              title='Transaction Count by Period',
                              labels={'count': 'Number of Transactions', 'period_display': 'Period'})
+                
+                fig2.update_traces(
+                    hovertemplate='<b>Period:</b> %{x}<br>' +
+                                  '<b>Transactions:</b> %{y}<br>' +
+                                  '<b>Data Source:</b> GRN Records<br>' +
+                                  '<extra></extra>'
+                )
+                
                 fig2.update_layout(
                     height=400,
                     annotations=[
@@ -418,19 +500,22 @@ class AdvancedStockDashboard:
                         )
                     ]
                 )
-                fig2.update_xaxes(tickangle=45)
-                fig2.update_traces(
-                    hovertemplate="<b>Period:</b> %{x}<br>" +
-                                  "<b>Transactions:</b> %{y}<br>" +
-                                  "<b>Data Source:</b> GRN Records<br>" +
-                                  "<extra></extra>"
-                )
-                st.plotly_chart(fig2, width="stretch")
+                fig2.update_xaxes(tickangle=45, title="Period")
+                fig2.update_yaxes(title="Number of Transactions")
+                st.plotly_chart(fig2, use_container_width=True)
                 
                 # Average transaction value
                 fig3 = px.line(trends, x='period_display', y='mean',
                               title='Average Transaction Value Trend',
                               labels={'mean': 'Average Value (R)', 'period_display': 'Period'})
+                
+                fig3.update_traces(
+                    hovertemplate='<b>Period:</b> %{x}<br>' +
+                                  '<b>Average Value:</b> R%{y:,.2f}<br>' +
+                                  '<b>Data Source:</b> GRN Records<br>' +
+                                  '<extra></extra>'
+                )
+                
                 fig3.update_layout(
                     height=400,
                     annotations=[
@@ -447,14 +532,9 @@ class AdvancedStockDashboard:
                         )
                     ]
                 )
-                fig3.update_xaxes(tickangle=45)
-                fig3.update_traces(
-                    hovertemplate="<b>Period:</b> %{x}<br>" +
-                                  "<b>Average Value:</b> R%{y:,.2f}<br>" +
-                                  "<b>Data Source:</b> GRN Records<br>" +
-                                  "<extra></extra>"
-                )
-                st.plotly_chart(fig3, width="stretch")
+                fig3.update_xaxes(tickangle=45, title="Period")
+                fig3.update_yaxes(title="Average Value (R)")
+                st.plotly_chart(fig3, use_container_width=True)
             else:
                 st.warning("No valid time period data found for trend analysis")
         else:
