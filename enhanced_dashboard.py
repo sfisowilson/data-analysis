@@ -3308,7 +3308,8 @@ class AdvancedStockDashboard:
             ("Objective 2: Audit Trail", "objective_2_stock_audit_trail.csv"),
             ("Objective 3: HR995 Report", "objective_3_hr995_report.csv"),
             ("Objective 4: End-to-End Process", "objective_4_end_to_end_process.csv"),
-            ("Objective 5: Stock Balances by Year", "objective_5_stock_balances_by_year.csv")
+            ("Objective 5: Stock Balances by Year", "objective_5_stock_balances_by_year.csv"),
+            ("❌ Invalid Voucher References", "invalid_voucher_references.csv")
         ]
         
         # Table selector
@@ -3326,6 +3327,11 @@ class AdvancedStockDashboard:
         df = self.load_data(selected_file)
         
         if df is not None and not df.empty:
+            # Special handling for Invalid Voucher References
+            if selected_file == "invalid_voucher_references.csv":
+                self.display_invalid_voucher_analysis(df)
+                return
+            
             # Apply supplier filter if active
             if filters and filters.get('suppliers') and 'All Suppliers' not in filters['suppliers']:
                 supplier_cols = [col for col in df.columns if 'supplier' in col.lower()]
@@ -3549,6 +3555,227 @@ class AdvancedStockDashboard:
         # Footer
         st.markdown("---")
         st.markdown("*Dashboard powered by Streamlit and Plotly* | *Data processed by Stock Data Processor*")
+
+    def display_invalid_voucher_analysis(self, invalid_df):
+        """Display comprehensive analysis of invalid voucher references."""
+        st.header("❌ Invalid Voucher References Analysis")
+        st.markdown("*Detailed analysis of GRN voucher references that don't have corresponding payment vouchers*")
+        
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Invalid GRN Records", f"{len(invalid_df):,}")
+        
+        with col2:
+            total_value = invalid_df['nett_grn_amt'].sum()
+            st.metric("Total Value", f"R{total_value:,.2f}")
+        
+        with col3:
+            unique_vouchers = invalid_df['voucher'].nunique()
+            st.metric("Unique Invalid Vouchers", f"{unique_vouchers:,}")
+        
+        with col4:
+            avg_value = invalid_df['nett_grn_amt'].mean()
+            st.metric("Average Value", f"R{avg_value:,.2f}")
+        
+        # Alert box for high value
+        if total_value > 10000000:  # 10 million
+            st.error(f"🚨 **HIGH VALUE ALERT**: R{total_value:,.2f} in invalid voucher references requires immediate attention!")
+        
+        # Reason breakdown
+        st.subheader("📊 Breakdown by Invalid Reason")
+        
+        if 'invalid_reason' in invalid_df.columns:
+            reason_summary = invalid_df.groupby('invalid_reason').agg({
+                'grn_no': 'count',
+                'nett_grn_amt': 'sum'
+            }).round(2)
+            reason_summary.columns = ['Count', 'Total_Value_R']
+            reason_summary['Percentage'] = (reason_summary['Count'] / len(invalid_df) * 100).round(1)
+            reason_summary = reason_summary.sort_values('Total_Value_R', ascending=False)
+            
+            st.dataframe(reason_summary, width='stretch')
+            
+            # Pie chart for reasons
+            fig_pie = px.pie(
+                values=reason_summary['Count'], 
+                names=reason_summary.index,
+                title="Invalid Voucher References by Reason"
+            )
+            st.plotly_chart(fig_pie, use_container_width=True)
+        
+        # Explanation of reasons
+        st.subheader("🔍 Explanation of Invalid Reasons")
+        
+        explanations = {
+            "INVI sequence gap or timing issue": {
+                "icon": "⏰",
+                "explanation": "These are INVI-prefixed vouchers that fall within the expected sequence range but don't exist in the payment system. This typically indicates timing issues where GRNs are created before vouchers are processed, or sequence gaps in the voucher numbering system.",
+                "action": "Review with finance team to verify if these vouchers are pending processing or if there are sequence gaps in the INVI numbering system."
+            },
+            "Special/manual voucher not in payment system": {
+                "icon": "📝",
+                "explanation": "These vouchers with '999I' prefix typically indicate special, manual, or temporary vouchers that may not follow the standard payment processing workflow.",
+                "action": "Verify with finance team if these are legitimate manual entries or if they require special processing outside the standard payment system."
+            },
+            "Different supplier/system voucher": {
+                "icon": "🏢",
+                "explanation": "These vouchers use different prefixes (like SINA, KEDA, WATA) suggesting they may belong to different supplier systems or payment processing streams.",
+                "action": "Confirm if these vouchers are processed through different systems or if they require separate reconciliation processes."
+            },
+            "Unknown voucher system or data entry error": {
+                "icon": "❓",
+                "explanation": "These vouchers don't match any recognized pattern and may indicate data entry errors or vouchers from unknown systems.",
+                "action": "Investigate individual cases to determine if they are data entry errors or legitimate vouchers from unrecognized systems."
+            }
+        }
+        
+        for reason, details in explanations.items():
+            if reason in invalid_df['invalid_reason'].values:
+                with st.expander(f"{details['icon']} {reason}"):
+                    st.markdown(f"**Explanation**: {details['explanation']}")
+                    st.markdown(f"**Recommended Action**: {details['action']}")
+        
+        # Voucher prefix analysis
+        st.subheader("🏷️ Voucher Prefix Analysis")
+        
+        if 'voucher_prefix' in invalid_df.columns:
+            prefix_summary = invalid_df.groupby('voucher_prefix').agg({
+                'grn_no': 'count',
+                'nett_grn_amt': 'sum'
+            }).round(2)
+            prefix_summary.columns = ['Count', 'Total_Value_R']
+            prefix_summary = prefix_summary.sort_values('Total_Value_R', ascending=False)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Prefix Summary:**")
+                st.dataframe(prefix_summary, width='stretch')
+            
+            with col2:
+                # Bar chart for prefixes
+                fig_bar = px.bar(
+                    x=prefix_summary.index,
+                    y=prefix_summary['Total_Value_R'],
+                    title="Invalid Voucher Value by Prefix",
+                    labels={'x': 'Voucher Prefix', 'y': 'Total Value (R)'}
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+        
+        # Date analysis
+        st.subheader("📅 Date Analysis")
+        
+        if 'date' in invalid_df.columns:
+            invalid_df['date_parsed'] = pd.to_datetime(invalid_df['date'], errors='coerce')
+            
+            # Monthly breakdown
+            invalid_df['year_month'] = invalid_df['date_parsed'].dt.to_period('M')
+            monthly_summary = invalid_df.groupby('year_month').agg({
+                'grn_no': 'count',
+                'nett_grn_amt': 'sum'
+            }).round(2)
+            monthly_summary.columns = ['Count', 'Total_Value_R']
+            
+            if len(monthly_summary) > 0:
+                # Time series chart
+                fig_time = px.line(
+                    x=monthly_summary.index.astype(str),
+                    y=monthly_summary['Total_Value_R'],
+                    title="Invalid Voucher References Over Time",
+                    labels={'x': 'Month', 'y': 'Total Value (R)'}
+                )
+                st.plotly_chart(fig_time, use_container_width=True)
+        
+        # Top invalid vouchers by value
+        st.subheader("💰 Top Invalid Vouchers by Value")
+        
+        top_invalid = invalid_df.nlargest(10, 'nett_grn_amt')[
+            ['voucher', 'supplier_name', 'date', 'nett_grn_amt', 'invalid_reason', 'description']
+        ]
+        st.dataframe(top_invalid, width='stretch')
+        
+        # Supplier impact analysis
+        st.subheader("🏪 Supplier Impact Analysis")
+        
+        if 'supplier_name' in invalid_df.columns:
+            supplier_impact = invalid_df.groupby('supplier_name').agg({
+                'grn_no': 'count',
+                'nett_grn_amt': 'sum',
+                'voucher': 'nunique'
+            }).round(2)
+            supplier_impact.columns = ['GRN_Count', 'Total_Value_R', 'Unique_Vouchers']
+            supplier_impact = supplier_impact.sort_values('Total_Value_R', ascending=False)
+            
+            st.markdown("**Top 10 Suppliers by Invalid Voucher Value:**")
+            st.dataframe(supplier_impact.head(10), width='stretch')
+        
+        # Recommendations
+        st.subheader("💡 Recommendations")
+        
+        recommendations = [
+            "🔍 **Immediate Action**: Investigate high-value invalid vouchers (>R100,000) individually",
+            "📅 **Weekly Review**: Set up weekly monitoring of invalid voucher rates and values",
+            "🏢 **System Integration**: Work with finance team to understand different voucher numbering systems",
+            "⏰ **Timing Alignment**: Review GRN creation vs voucher processing timing to reduce sequence gaps",
+            "📊 **Automated Alerts**: Implement alerts when invalid voucher rate exceeds 5% or value exceeds R1M",
+            "🔄 **Process Improvement**: Establish standardized voucher numbering across all systems",
+            "📋 **Regular Reconciliation**: Schedule monthly reconciliation of GRN vs payment vouchers"
+        ]
+        
+        for rec in recommendations:
+            st.markdown(f"- {rec}")
+        
+        # Detailed data table
+        st.subheader("📋 Detailed Invalid Voucher Data")
+        
+        # Filter options
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            reason_filter = st.multiselect(
+                "Filter by Reason:",
+                options=invalid_df['invalid_reason'].unique(),
+                default=invalid_df['invalid_reason'].unique()
+            )
+        
+        with col2:
+            min_value = st.number_input("Minimum Value (R):", value=0, step=1000)
+        
+        with col3:
+            max_rows = st.number_input("Max rows to display:", value=100, min_value=10, max_value=1000)
+        
+        # Apply filters
+        filtered_invalid = invalid_df[
+            (invalid_df['invalid_reason'].isin(reason_filter)) &
+            (invalid_df['nett_grn_amt'] >= min_value)
+        ]
+        
+        st.info(f"📊 Showing {min(len(filtered_invalid), max_rows):,} of {len(filtered_invalid):,} filtered records")
+        
+        # Display filtered data
+        display_columns = [
+            'grn_no', 'voucher', 'supplier_name', 'date', 'nett_grn_amt', 
+            'invalid_reason', 'voucher_prefix', 'item_no', 'description'
+        ]
+        display_columns = [col for col in display_columns if col in filtered_invalid.columns]
+        
+        st.dataframe(
+            filtered_invalid[display_columns].head(max_rows),
+            width='stretch'
+        )
+        
+        # Download option
+        st.subheader("💾 Download Invalid Voucher Report")
+        
+        csv_data = filtered_invalid.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Invalid Voucher Analysis (CSV)",
+            data=csv_data,
+            file_name=f"invalid_voucher_analysis_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
+        )
 
 def main():
     """Main function to run the dashboard."""
