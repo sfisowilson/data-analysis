@@ -249,18 +249,51 @@ class StockDataProcessor:
                 df[col] = df[col].astype(str).str.strip()
                 df[col] = df[col].replace('nan', np.nan)
             
-            # Convert dates to standard format
+            # Convert dates to standard format - handle YYYYMMDD and YYYYMM formats
             date_columns = [col for col in df.columns if 'date' in col.lower()]
             for col in date_columns:
                 if col in df.columns:
-                    # Try multiple date formats and handle numeric dates
-                    df[col] = pd.to_datetime(df[col], errors='coerce', origin='1900-01-01', unit='D')
-                    # If that fails, try standard datetime parsing
-                    mask = df[col].isna()
-                    if mask.any():
-                        df.loc[mask, col] = pd.to_datetime(df.loc[mask, col], errors='coerce')
-                    # Format as string
-                    df[col] = df[col].dt.strftime('%Y-%m-%d')
+                    # Handle YYYYMMDD format (like GRN Date, Issue Date, Cheq Date)
+                    try:
+                        # Convert to numeric first to handle YYYYMMDD format
+                        numeric_dates = pd.to_numeric(df[col], errors='coerce')
+                        df[f'{col}_converted'] = pd.NaT
+                        
+                        for idx in numeric_dates.dropna().index:
+                            try:
+                                date_val = int(numeric_dates.loc[idx])
+                                date_str = str(date_val)
+                                
+                                if len(date_str) == 8:  # YYYYMMDD format
+                                    year = int(date_str[:4])
+                                    month = int(date_str[4:6])
+                                    day = int(date_str[6:8])
+                                    
+                                    if 2000 <= year <= 2030 and 1 <= month <= 12 and 1 <= day <= 31:
+                                        df.loc[idx, f'{col}_converted'] = pd.Timestamp(year=year, month=month, day=day)
+                                
+                                elif len(date_str) == 6:  # YYYYMM format (fin_period)
+                                    year = int(date_str[:4])
+                                    month = int(date_str[4:6])
+                                    
+                                    if 2000 <= year <= 2030 and 1 <= month <= 12:
+                                        df.loc[idx, f'{col}_converted'] = pd.Timestamp(year=year, month=month, day=1)
+                                        
+                            except Exception:
+                                continue
+                        
+                        # If conversion was successful, replace original column
+                        if df[f'{col}_converted'].notna().sum() > 0:
+                            df[col] = df[f'{col}_converted']
+                            df = df.drop(columns=[f'{col}_converted'])
+                        else:
+                            # Fallback to standard datetime parsing
+                            df[col] = pd.to_datetime(df[col], errors='coerce')
+                            df = df.drop(columns=[f'{col}_converted'])
+                    
+                    except Exception:
+                        # Fallback to standard datetime parsing
+                        df[col] = pd.to_datetime(df[col], errors='coerce')
             
             # Convert quantities to numeric
             quantity_columns = [col for col in df.columns if any(q in col.lower() for q in ['quantity', 'qty', 'amount'])]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test the new date processing functionality
+Test the enhanced date processing functionality for both YYYYMM and YYYYMMDD formats
 """
 
 import pandas as pd
@@ -8,17 +8,20 @@ import sys
 sys.path.append('.')
 
 def test_date_processing():
-    print("=== TESTING NEW DATE PROCESSING ===")
+    print("=== TESTING ENHANCED DATE PROCESSING ===")
+    print("Testing both YYYYMM (fin_period) and YYYYMMDD (date columns) formats")
     
     # Test GRN data
     try:
         df = pd.read_csv('output/hr995_grn.csv', low_memory=False)
-        print(f"Loaded GRN data: {len(df)} rows")
+        print(f"\nLoaded GRN data: {len(df)} rows")
+        print(f"Columns: {df.columns.tolist()}")
         
-        # Test fin_period conversion
+        # Test fin_period conversion (YYYYMM format)
         if 'fin_period' in df.columns:
             fin_period_series = pd.to_numeric(df['fin_period'], errors='coerce')
             valid_periods = fin_period_series.dropna()
+            print(f"\n📅 FIN_PERIOD (YYYYMM format):")
             print(f"Valid periods found: {len(valid_periods)}")
             
             if len(valid_periods) > 0:
@@ -29,27 +32,45 @@ def test_date_processing():
                 year = int(sample_period // 100)
                 month = int(sample_period % 100)
                 print(f"Sample conversion: {sample_period} -> {year}-{month:02d}")
-                
-                # Test creating period_date
-                df['period_date'] = pd.NaT
-                for idx in valid_periods.head(10).index:
-                    try:
-                        year = int(valid_periods.loc[idx] // 100)
-                        month = int(valid_periods.loc[idx] % 100)
-                        if 1 <= month <= 12 and year >= 2000:
-                            df.loc[idx, 'period_date'] = pd.Timestamp(year=year, month=month, day=1)
-                    except Exception as e:
-                        print(f"Error converting {valid_periods.loc[idx]}: {e}")
-                
-                # Test period_display
-                df['period_display'] = df['period_date'].dt.strftime('%Y-%m')
-                
-                print("\nFirst 5 converted dates:")
-                test_df = df[['fin_period', 'period_date', 'period_display']].head(10)
-                print(test_df.dropna(subset=['period_date']))
         
-        print("\n" + "="*50)
-        print("✅ Date processing test completed successfully!")
+        # Test YYYYMMDD date columns
+        date_columns = [col for col in df.columns if 'date' in col.lower()]
+        print(f"\n📅 DATE COLUMNS (should be YYYYMMDD format):")
+        print(f"Date columns found: {date_columns}")
+        
+        for col in date_columns:
+            if col in df.columns:
+                print(f"\n--- {col} ---")
+                sample_values = df[col].dropna().head(5)
+                print(f"Sample raw values: {sample_values.tolist()}")
+                
+                # Check if they look like YYYYMMDD
+                numeric_dates = pd.to_numeric(df[col], errors='coerce')
+                valid_numeric = numeric_dates.dropna()
+                
+                if len(valid_numeric) > 0:
+                    sample_numeric = valid_numeric.head(3)
+                    print(f"Sample numeric values: {sample_numeric.tolist()}")
+                    
+                    # Test YYYYMMDD conversion
+                    for val in sample_numeric:
+                        try:
+                            date_str = str(int(val))
+                            if len(date_str) == 8:
+                                year = int(date_str[:4])
+                                month = int(date_str[4:6])
+                                day = int(date_str[6:8])
+                                print(f"  {val} -> {year}-{month:02d}-{day:02d}")
+                            else:
+                                print(f"  {val} -> Invalid length ({len(date_str)} digits)")
+                        except Exception as e:
+                            print(f"  {val} -> Error: {e}")
+        
+        print("\n" + "="*60)
+        print("✅ Enhanced date processing test completed!")
+        print("\nFormat Summary:")
+        print("- fin_period: YYYYMM (e.g., 202211 = 2022-11)")
+        print("- date columns: YYYYMMDD (e.g., 20221115 = 2022-11-15)")
         
     except Exception as e:
         print(f"❌ Error testing date processing: {e}")

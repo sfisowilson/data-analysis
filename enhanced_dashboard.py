@@ -105,13 +105,13 @@ class AdvancedStockDashboard:
         
     @st.cache_data
     def load_data(_self, filename):
-        """Load and cache data files with improved date handling."""
+        """Load and cache data files with improved date handling for multiple formats."""
         file_path = _self.output_folder / filename
         if file_path.exists():
             try:
                 df = pd.read_csv(file_path, low_memory=False)
                 
-                # Fix date columns - handle Excel date issues and fin_period conversion
+                # Handle different date formats
                 for col in df.columns:
                     if 'date' in col.lower():
                         if df[col].dtype == 'object':
@@ -124,12 +124,31 @@ class AdvancedStockDashboard:
                                 # If most dates are 1900-01-01, they're likely corrupted
                                 year_1900_count = (valid_dates.dt.year == 1900).sum()
                                 if year_1900_count > len(valid_dates) * 0.8:
-                                    # Mark these dates as invalid
-                                    df[col] = pd.NaT
+                                    # Try to convert as YYYYMMDD format
+                                    numeric_dates = pd.to_numeric(df[col].astype(str).str.replace('-', ''), errors='coerce')
+                                    valid_numeric = numeric_dates.dropna()
+                                    
+                                    if len(valid_numeric) > 0:
+                                        df[f'{col}_converted'] = pd.NaT
+                                        for idx in valid_numeric.index:
+                                            try:
+                                                date_str = str(int(valid_numeric.loc[idx]))
+                                                if len(date_str) == 8:  # YYYYMMDD
+                                                    year = int(date_str[:4])
+                                                    month = int(date_str[4:6])
+                                                    day = int(date_str[6:8])
+                                                    if 2000 <= year <= 2030 and 1 <= month <= 12 and 1 <= day <= 31:
+                                                        df.loc[idx, f'{col}_converted'] = pd.Timestamp(year=year, month=month, day=day)
+                                            except:
+                                                continue
+                                        
+                                        # Replace original column if conversion successful
+                                        if df[f'{col}_converted'].notna().sum() > 0:
+                                            df[col] = df[f'{col}_converted']
+                                            df = df.drop(columns=[f'{col}_converted'])
                 
-                # Convert fin_period to proper dates if available
+                # Convert fin_period to proper dates (YYYYMM format)
                 if 'fin_period' in df.columns:
-                    # Create a proper date column from fin_period (YYYYMM format)
                     fin_period_series = pd.to_numeric(df['fin_period'], errors='coerce')
                     valid_periods = fin_period_series.dropna()
                     
@@ -151,6 +170,35 @@ class AdvancedStockDashboard:
                         # If original date column is mostly empty, use period_date as primary date
                         if 'date' in df.columns and df['date'].isna().sum() > len(df) * 0.8:
                             df['date'] = df['period_date']
+                
+                # Handle other YYYYMMDD date columns that might not have been caught
+                for col in df.columns:
+                    if any(term in col.lower() for term in ['grn_date', 'cheq_date', 'last_move_date', 'issue_date']):
+                        if df[col].dtype in ['object', 'int64', 'float64']:
+                            # Try to convert YYYYMMDD format
+                            numeric_dates = pd.to_numeric(df[col], errors='coerce')
+                            valid_numeric = numeric_dates.dropna()
+                            
+                            if len(valid_numeric) > 0:
+                                df[f'{col}_converted'] = pd.NaT
+                                for idx in valid_numeric.index:
+                                    try:
+                                        date_val = int(valid_numeric.loc[idx])
+                                        date_str = str(date_val)
+                                        
+                                        if len(date_str) == 8:  # YYYYMMDD
+                                            year = int(date_str[:4])
+                                            month = int(date_str[4:6])
+                                            day = int(date_str[6:8])
+                                            if 2000 <= year <= 2030 and 1 <= month <= 12 and 1 <= day <= 31:
+                                                df.loc[idx, f'{col}_converted'] = pd.Timestamp(year=year, month=month, day=day)
+                                    except:
+                                        continue
+                                
+                                # Replace original column if conversion successful
+                                if df[f'{col}_converted'].notna().sum() > 0:
+                                    df[col] = df[f'{col}_converted']
+                                    df = df.drop(columns=[f'{col}_converted'])
                 
                 return df
             except Exception as e:
