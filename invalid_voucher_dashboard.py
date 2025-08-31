@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+import os
 
 st.set_page_config(
     page_title="Invalid Voucher References Analysis",
@@ -18,7 +19,56 @@ def load_invalid_vouchers():
     return pd.read_csv('output/invalid_voucher_references.csv')
 
 try:
-    invalid_df = load_invalid_vouchers()
+    # Try to load corrected analysis first
+    corrected_file = 'output/invalid_voucher_references_corrected.csv'
+    if os.path.exists(corrected_file):
+        invalid_df = pd.read_csv(corrected_file)
+        st.success("📊 **Using Corrected Analysis**: PDF → GRN → Voucher linkage applied")
+        
+        # Additional corrected analysis features
+        if 'has_pdf_link' in invalid_df.columns:
+            st.markdown("---")
+            st.subheader("🔗 PDF Linkage Analysis")
+            
+            pdf_summary = invalid_df.groupby('has_pdf_link').agg({
+                'grn_no': 'count',
+                'nett_grn_amt': 'sum'
+            }).round(2)
+            pdf_summary.columns = ['Count', 'Total_Value_R']
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("PDF-Linked Invalid Vouchers", 
+                         f"{pdf_summary.loc['Yes', 'Count']:,.0f}" if 'Yes' in pdf_summary.index else "0")
+                st.metric("PDF-Linked Value", 
+                         f"R{pdf_summary.loc['Yes', 'Total_Value_R']:,.2f}" if 'Yes' in pdf_summary.index else "R0")
+            
+            with col2:
+                st.metric("Non-PDF-Linked Invalid Vouchers", 
+                         f"{pdf_summary.loc['No', 'Count']:,.0f}" if 'No' in pdf_summary.index else "0")
+                st.metric("Non-PDF-Linked Value", 
+                         f"R{pdf_summary.loc['No', 'Total_Value_R']:,.2f}" if 'No' in pdf_summary.index else "R0")
+            
+            # PDF linkage chart
+            fig_pdf = px.pie(
+                values=pdf_summary['Total_Value_R'],
+                names=pdf_summary.index,
+                title="Invalid Voucher Value by PDF Linkage",
+                color_discrete_sequence=['#ff9999', '#66b3ff']
+            )
+            st.plotly_chart(fig_pdf, use_container_width=True)
+            
+            st.info("""
+            **PDF Linkage Insights:**
+            - PDF-linked vouchers have proper document traceability
+            - Non-PDF-linked vouchers may be from different transaction streams
+            - Higher proportion of non-PDF-linked invalid vouchers suggests system gaps
+            """)
+    else:
+        # Fallback to original analysis
+        invalid_df = pd.read_csv('output/invalid_voucher_references.csv')
+        st.warning("⚠️ **Using Original Analysis**: Run corrected linkage analysis for updated results")
+        st.info("To get corrected analysis, run: `python analyze_corrected_voucher_linkage.py`")
     
     # Key metrics at the top
     st.markdown("---")
