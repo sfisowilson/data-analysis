@@ -31,6 +31,14 @@ hide_streamlit_style = """
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stAppDeployButton {display: none;}
+    header {visibility: hidden;}
+    .stAppHeader {display: none;}
+    .css-1rs6os {display: none;}
+    .css-17eq0hr {display: none;}
+    [data-testid="stHeader"] {display: none;}
+    [data-testid="stToolbar"] {display: none;}
+    .stApp > header {display: none;}
+    .css-1y4p8pa {display: none;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
