@@ -1241,11 +1241,12 @@ class AdvancedStockDashboard:
             return
         
         # Create anomaly detection subsections
-        anomaly_tab1, anomaly_tab2, anomaly_tab3, anomaly_tab4 = st.tabs([
+        anomaly_tab1, anomaly_tab2, anomaly_tab3, anomaly_tab4, anomaly_tab5 = st.tabs([
             "💸 Financial Anomalies",
             "📊 Volume Anomalies", 
             "⏰ Time-based Anomalies",
-            "🎯 Pattern Anomalies"
+            "🎯 Pattern Anomalies",
+            "🔗 GRN-Transaction Analysis"
         ])
         
         with anomaly_tab1:
@@ -1259,6 +1260,9 @@ class AdvancedStockDashboard:
         
         with anomaly_tab4:
             self.create_pattern_anomalies(grn_df, issue_df, stock_df)
+        
+        with anomaly_tab5:
+            self.create_grn_transaction_analysis(grn_df, voucher_df)
     
     def create_financial_anomalies(self, grn_df, voucher_df):
         """Detect financial anomalies and unusual spending patterns."""
@@ -2361,6 +2365,530 @@ class AdvancedStockDashboard:
         - **🔄 Quarterly**: Assess supplier consolidation opportunities and inventory optimization
         - **📋 Ongoing**: Implement automated alerts for detected anomaly patterns
         """)
+
+    def create_grn_transaction_analysis(self, grn_df, voucher_df):
+        """Comprehensive GRN vs Transaction analysis to identify payment anomalies."""
+        st.subheader("🔗 GRN-Transaction Comparison Analysis")
+        st.markdown("*Identify payment discrepancies, multiple payments, and supplier linking issues*")
+        
+        if len(grn_df) == 0 or len(voucher_df) == 0:
+            st.warning("Both GRN and voucher data are required for this analysis.")
+            return
+        
+        # Create analysis tabs
+        grn_tab1, grn_tab2, grn_tab3, grn_tab4 = st.tabs([
+            "🔍 Payment Status Analysis",
+            "💳 Multiple Payment Detection", 
+            "🔗 Supplier Linking Issues",
+            "📊 Summary Dashboard"
+        ])
+        
+        with grn_tab1:
+            self.analyze_payment_status(grn_df, voucher_df)
+        
+        with grn_tab2:
+            self.analyze_multiple_payments(grn_df, voucher_df)
+        
+        with grn_tab3:
+            self.analyze_supplier_linking(grn_df, voucher_df)
+        
+        with grn_tab4:
+            self.create_grn_transaction_summary(grn_df, voucher_df)
+
+    def analyze_payment_status(self, grn_df, voucher_df):
+        """Analyze payment status of GRNs."""
+        st.markdown("### 🔍 GRN Payment Status Analysis")
+        
+        # Prepare data for analysis
+        grn_analysis = grn_df.copy()
+        voucher_analysis = voucher_df.copy()
+        
+        # Key insight: GRN 'voucher' column links to Voucher 'voucher_no' column
+        # Both should be treated as strings for proper matching
+        
+        # Standardize voucher references for matching
+        grn_analysis['voucher_clean'] = grn_analysis['voucher'].astype(str).str.strip().str.upper()
+        voucher_analysis['voucher_no_clean'] = voucher_analysis['voucher_no'].astype(str).str.strip().str.upper()
+        
+        # Get amount columns
+        amount_col_grn = 'nett_grn_amt'
+        amount_col_voucher = 'cheq_amt'
+        
+        supplier_col_grn = 'supplier_name'
+        supplier_col_voucher = 'payee_name'
+        
+        # Convert amounts to numeric
+        grn_analysis[amount_col_grn] = pd.to_numeric(grn_analysis[amount_col_grn], errors='coerce')
+        voucher_analysis[amount_col_voucher] = pd.to_numeric(voucher_analysis[amount_col_voucher], errors='coerce')
+        
+        # Create matching sets (excluding NaN/null values)
+        grn_voucher_refs = set(grn_analysis[grn_analysis['voucher'].notna()]['voucher_clean'])
+        paid_voucher_nos = set(voucher_analysis['voucher_no_clean'])
+        
+        # Find unpaid voucher references
+        unpaid_voucher_refs = grn_voucher_refs - paid_voucher_nos
+        
+        # Analysis columns
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🚨 Unpaid GRN Analysis")
+            
+            # Filter unpaid GRNs
+            unpaid_grns = grn_analysis[
+                (grn_analysis['voucher'].notna()) & 
+                (grn_analysis['voucher_clean'].isin(unpaid_voucher_refs))
+            ]
+            
+            # Also include GRNs with no voucher reference at all
+            no_voucher_grns = grn_analysis[grn_analysis['voucher'].isna()]
+            
+            st.metric("GRNs with Unpaid Voucher Refs", len(unpaid_grns))
+            st.metric("GRNs with No Voucher Reference", len(no_voucher_grns))
+            
+            total_unpaid_count = len(unpaid_grns) + len(no_voucher_grns)
+            st.metric("Total Potentially Unpaid GRNs", total_unpaid_count)
+            
+            if len(unpaid_grns) > 0:
+                unpaid_value = unpaid_grns[amount_col_grn].sum()
+                st.metric("Unpaid Voucher Value", f"R{unpaid_value:,.2f}")
+            
+            if len(no_voucher_grns) > 0:
+                no_voucher_value = no_voucher_grns[amount_col_grn].sum()
+                st.metric("No Voucher Reference Value", f"R{no_voucher_value:,.2f}")
+            
+            # Show sample unpaid GRNs
+            if len(unpaid_grns) > 0:
+                st.markdown("**Sample Unpaid GRNs (with voucher refs):**")
+                display_cols = ['grn_no', 'voucher', supplier_col_grn, amount_col_grn, 'date']
+                top_unpaid = unpaid_grns.nlargest(5, amount_col_grn) if len(unpaid_grns) > 5 else unpaid_grns
+                st.dataframe(
+                    top_unpaid[display_cols],
+                    width='stretch',
+                    hide_index=True
+                )
+            
+            if len(no_voucher_grns) > 0:
+                st.markdown("**Sample GRNs with No Voucher Reference:**")
+                display_cols = ['grn_no', supplier_col_grn, amount_col_grn, 'date']
+                top_no_voucher = no_voucher_grns.nlargest(3, amount_col_grn) if len(no_voucher_grns) > 3 else no_voucher_grns
+                st.dataframe(
+                    top_no_voucher[display_cols],
+                    width='stretch',
+                    hide_index=True
+                )
+        
+        with col2:
+            st.markdown("#### ✅ Paid GRNs Analysis")
+            
+            # Find paid GRNs
+            paid_grns = grn_analysis[
+                (grn_analysis['voucher'].notna()) & 
+                (grn_analysis['voucher_clean'].isin(paid_voucher_nos))
+            ]
+            
+            st.metric("Paid GRNs", len(paid_grns))
+            
+            if len(paid_grns) > 0:
+                paid_value = paid_grns[amount_col_grn].sum()
+                st.metric("Total Paid Value", f"R{paid_value:,.2f}")
+                
+                # Payment efficiency metrics
+                total_grn_value = grn_analysis[amount_col_grn].sum()
+                payment_rate = (paid_value / total_grn_value * 100) if total_grn_value > 0 else 0
+                st.metric("Payment Rate by Value", f"{payment_rate:.1f}%")
+                
+                # Count-based payment rate
+                total_grns_with_voucher = len(grn_analysis[grn_analysis['voucher'].notna()])
+                payment_rate_count = (len(paid_grns) / total_grns_with_voucher * 100) if total_grns_with_voucher > 0 else 0
+                st.metric("Payment Rate by Count", f"{payment_rate_count:.1f}%")
+            
+            # Matching summary
+            st.markdown("#### 📊 Matching Summary")
+            st.metric("GRN Voucher References", len(grn_voucher_refs))
+            st.metric("Actual Payment Vouchers", len(paid_voucher_nos))
+            st.metric("Successfully Matched", len(grn_voucher_refs & paid_voucher_nos))
+            
+            match_rate = len(grn_voucher_refs & paid_voucher_nos) / len(grn_voucher_refs) * 100 if len(grn_voucher_refs) > 0 else 0
+            st.metric("Voucher Match Rate", f"{match_rate:.1f}%")
+            
+            # Payment timing analysis (if dates are available)
+            if len(paid_grns) > 0:
+                st.markdown("**Payment Timing Analysis:**")
+                
+                # Merge paid GRNs with voucher data for timing analysis
+                try:
+                    timing_merge = paid_grns.merge(
+                        voucher_analysis,
+                        left_on='voucher_clean',
+                        right_on='voucher_no_clean',
+                        how='inner',
+                        suffixes=('_grn', '_voucher')
+                    )
+                    
+                    if len(timing_merge) > 0:
+                        # Convert dates
+                        timing_merge['grn_date'] = pd.to_datetime(timing_merge['date_grn'], errors='coerce')
+                        timing_merge['payment_date'] = pd.to_datetime(timing_merge['date_voucher'], errors='coerce')
+                        
+                        # Calculate payment delay
+                        valid_timing = timing_merge.dropna(subset=['grn_date', 'payment_date'])
+                        if len(valid_timing) > 0:
+                            valid_timing['payment_delay'] = (valid_timing['payment_date'] - valid_timing['grn_date']).dt.days
+                            
+                            avg_delay = valid_timing['payment_delay'].mean()
+                            max_delay = valid_timing['payment_delay'].max()
+                            min_delay = valid_timing['payment_delay'].min()
+                            
+                            st.metric("Average Payment Delay", f"{avg_delay:.1f} days")
+                            st.metric("Max Payment Delay", f"{max_delay:.0f} days")
+                            if min_delay < 0:
+                                st.metric("Early Payments", f"{abs(min_delay):.0f} days early")
+                except Exception as e:
+                    st.info("Payment timing analysis unavailable due to data format")
+
+    def analyze_multiple_payments(self, grn_df, voucher_df):
+        """Detect GRNs that may have been paid multiple times."""
+        st.markdown("### 💳 Multiple Payment Detection")
+        
+        # Find potential duplicate payments
+        voucher_analysis = voucher_df.copy()
+        
+        # Group vouchers by key fields to find duplicates
+        amount_col = None
+        for col in ['cheq_amt', 'amount', 'value', 'payment_amount']:
+            if col in voucher_analysis.columns:
+                amount_col = col
+                break
+        
+        supplier_col = 'payee_name' if 'payee_name' in voucher_analysis.columns else 'supplier'
+        
+        if amount_col:
+            voucher_analysis[amount_col] = pd.to_numeric(voucher_analysis[amount_col], errors='coerce')
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### 🔍 Duplicate Payment Analysis")
+                
+                # Method 1: Exact amount duplicates by supplier
+                duplicate_amounts = voucher_analysis.groupby([supplier_col, amount_col]).size().reset_index(name='payment_count')
+                multiple_payments = duplicate_amounts[duplicate_amounts['payment_count'] > 1]
+                
+                if len(multiple_payments) > 0:
+                    st.metric("Potential Duplicate Payment Groups", len(multiple_payments))
+                    
+                    total_duplicate_value = (multiple_payments[amount_col] * (multiple_payments['payment_count'] - 1)).sum()
+                    st.metric("Potential Over-payment Value", f"R{total_duplicate_value:,.2f}")
+                    
+                    # Show details
+                    st.markdown("**Potential Duplicate Payments:**")
+                    multiple_payments_display = multiple_payments.sort_values(amount_col, ascending=False)
+                    st.dataframe(
+                        multiple_payments_display.head(10),
+                        width='stretch',
+                        hide_index=True
+                    )
+                else:
+                    st.success("✅ No obvious duplicate payments detected")
+                
+                # Method 2: Same day, same supplier, similar amounts
+                if 'date' in voucher_analysis.columns:
+                    st.markdown("#### 📅 Same-Day Payment Analysis")
+                    
+                    voucher_analysis['date'] = pd.to_datetime(voucher_analysis['date'], errors='coerce')
+                    
+                    same_day_groups = voucher_analysis.groupby([supplier_col, 'date']).agg({
+                        amount_col: ['count', 'sum', 'std'],
+                        'voucher_no': 'count'
+                    }).reset_index()
+                    
+                    # Flatten column names
+                    same_day_groups.columns = [
+                        supplier_col, 'date', 'payment_count', 'total_amount', 'amount_std', 'voucher_count'
+                    ]
+                    
+                    # Find suspicious same-day payments
+                    suspicious_days = same_day_groups[
+                        (same_day_groups['payment_count'] > 1) & 
+                        (same_day_groups['amount_std'] < same_day_groups['total_amount'] * 0.1)  # Similar amounts
+                    ]
+                    
+                    if len(suspicious_days) > 0:
+                        st.metric("Suspicious Same-Day Payment Days", len(suspicious_days))
+                        st.dataframe(
+                            suspicious_days.head(10),
+                            width='stretch',
+                            hide_index=True
+                        )
+            
+            with col2:
+                st.markdown("#### 📊 Payment Pattern Analysis")
+                
+                # Visualize payment frequency distribution
+                payment_freq = voucher_analysis.groupby(supplier_col)[amount_col].agg(['count', 'sum', 'mean']).reset_index()
+                payment_freq.columns = [supplier_col, 'payment_count', 'total_paid', 'avg_payment']
+                
+                # Find suppliers with unusually high payment frequency
+                high_freq_threshold = payment_freq['payment_count'].quantile(0.9)
+                high_freq_suppliers = payment_freq[payment_freq['payment_count'] > high_freq_threshold]
+                
+                if len(high_freq_suppliers) > 0:
+                    st.metric("High-Frequency Payment Suppliers", len(high_freq_suppliers))
+                    
+                # Create chart
+                if len(high_freq_suppliers) > 0:
+                    fig = px.scatter(
+                        payment_freq,
+                        x='payment_count',
+                        y='avg_payment',
+                        size='total_paid',
+                        hover_data=[supplier_col],
+                        title='Supplier Payment Patterns',
+                        labels={
+                            'payment_count': 'Number of Payments',
+                            'avg_payment': 'Average Payment Amount (R)',
+                            'total_paid': 'Total Paid (R)'
+                        }
+                    )
+                    
+                    # Highlight high-frequency suppliers
+                    fig.add_scatter(
+                        x=high_freq_suppliers['payment_count'],
+                        y=high_freq_suppliers['avg_payment'],
+                        mode='markers',
+                        marker=dict(color='red', size=12, symbol='diamond'),
+                        name='High-Frequency Suppliers',
+                        text=high_freq_suppliers[supplier_col],
+                        hovertemplate='<b>%{text}</b><br>' +
+                                      'Payments: %{x}<br>' +
+                                      'Avg Amount: R%{y:,.2f}<br>' +
+                                      '<extra></extra>'
+                    )
+                    
+                    fig.update_layout(height=400)
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No high-frequency payment suppliers detected")
+                
+                # Show top payment suppliers
+                st.markdown("#### 🏆 Top Payment Recipients")
+                top_suppliers = payment_freq.nlargest(10, 'total_paid')
+                st.dataframe(
+                    top_suppliers,
+                    width='stretch',
+                    hide_index=True
+                )
+
+    def analyze_supplier_linking(self, grn_df, voucher_df):
+        """Analyze supplier linking issues between GRNs and payments."""
+        st.markdown("### 🔗 Supplier Linking Issues Analysis")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🔍 Cross-Reference Analysis")
+            
+            # Get supplier lists from both datasets
+            grn_supplier_col = 'supplier_name'
+            voucher_supplier_col = 'payee_name'
+            
+            # Clean and normalize supplier names
+            grn_suppliers = set(grn_df[grn_supplier_col].dropna().astype(str).str.strip().str.upper())
+            voucher_suppliers = set(voucher_df[voucher_supplier_col].dropna().astype(str).str.strip().str.upper())
+            
+            # Find mismatches
+            grn_only = grn_suppliers - voucher_suppliers
+            voucher_only = voucher_suppliers - grn_suppliers
+            common_suppliers = grn_suppliers & voucher_suppliers
+            
+            st.metric("Common Suppliers", len(common_suppliers))
+            st.metric("GRN-Only Suppliers", len(grn_only))
+            st.metric("Payment-Only Suppliers", len(voucher_only))
+            
+            # Calculate coverage
+            if len(grn_suppliers) > 0:
+                coverage_rate = len(common_suppliers) / len(grn_suppliers) * 100
+                st.metric("GRN Supplier Coverage", f"{coverage_rate:.1f}%")
+            
+            # Show unmatched suppliers (limited sample)
+            if len(grn_only) > 0:
+                st.markdown("**Sample GRN-Only Suppliers:**")
+                grn_only_sample = pd.DataFrame(list(grn_only)[:5], columns=['Supplier'])
+                st.dataframe(grn_only_sample, width='stretch', hide_index=True)
+            
+            if len(voucher_only) > 0:
+                st.markdown("**Sample Payment-Only Suppliers:**")
+                voucher_only_sample = pd.DataFrame(list(voucher_only)[:5], columns=['Supplier'])
+                st.dataframe(voucher_only_sample, width='stretch', hide_index=True)
+        
+        with col2:
+            st.markdown("#### 🎯 Data Quality Analysis")
+            
+            # GRN data quality check
+            if 'grn_no' in grn_df.columns:
+                grn_supplier_mapping = grn_df.groupby('grn_no')[grn_supplier_col].nunique().reset_index()
+                grn_supplier_mapping.columns = ['grn_no', 'supplier_count']
+                
+                multiple_supplier_grns = grn_supplier_mapping[grn_supplier_mapping['supplier_count'] > 1]
+                
+                if len(multiple_supplier_grns) > 0:
+                    st.metric("GRNs with Multiple Suppliers", len(multiple_supplier_grns))
+                    
+                    # Get details of problematic GRNs
+                    problem_grns = grn_df[grn_df['grn_no'].isin(multiple_supplier_grns['grn_no'])]
+                    problem_summary = problem_grns.groupby('grn_no').agg({
+                        grn_supplier_col: lambda x: ', '.join(x.unique()[:3]),  # Limit to 3 names
+                        'nett_grn_amt': 'sum'
+                    }).reset_index()
+                    
+                    st.markdown("**Sample Multi-Supplier GRNs:**")
+                    st.dataframe(
+                        problem_summary.head(5),
+                        width='stretch',
+                        hide_index=True
+                    )
+                else:
+                    st.success("✅ No GRNs linked to multiple suppliers")
+            
+            # Supplier name similarity analysis (simplified)
+            st.markdown("#### 🔤 Name Variation Detection")
+            
+            # Simple check for potential variations
+            grn_supplier_words = set()
+            voucher_supplier_words = set()
+            
+            # Extract individual words from supplier names
+            for supplier in list(grn_suppliers)[:50]:  # Limit for performance
+                words = supplier.split()
+                grn_supplier_words.update([word for word in words if len(word) > 3])
+            
+            for supplier in list(voucher_suppliers)[:50]:  # Limit for performance
+                words = supplier.split()
+                voucher_supplier_words.update([word for word in words if len(word) > 3])
+            
+            # Find common words (potential name bases)
+            common_words = grn_supplier_words & voucher_supplier_words
+            
+            if len(common_words) > 0:
+                st.metric("Common Supplier Name Words", len(common_words))
+                
+                # Show some examples
+                sample_words = list(common_words)[:10]
+                word_df = pd.DataFrame(sample_words, columns=['Common Words'])
+                st.dataframe(word_df, width='stretch', hide_index=True)
+            
+            # Voucher reference integrity check
+            st.markdown("#### 🔗 Reference Integrity")
+            
+            # Check for GRNs with invalid voucher references
+            if 'voucher' in grn_df.columns and 'voucher_no' in voucher_df.columns:
+                grn_voucher_refs = set(grn_df['voucher'].dropna().astype(str).str.strip().str.upper())
+                actual_vouchers = set(voucher_df['voucher_no'].dropna().astype(str).str.strip().str.upper())
+                
+                invalid_refs = grn_voucher_refs - actual_vouchers
+                
+                st.metric("Invalid Voucher References", len(invalid_refs))
+                
+                if len(invalid_refs) > 0:
+                    # Show GRNs with invalid references
+                    invalid_grns = grn_df[
+                        grn_df['voucher'].astype(str).str.strip().str.upper().isin(invalid_refs)
+                    ]
+                    invalid_value = invalid_grns['nett_grn_amt'].sum() if 'nett_grn_amt' in invalid_grns.columns else 0
+                    st.metric("Value of Invalid References", f"R{invalid_value:,.2f}")
+                else:
+                    st.success("✅ All voucher references are valid")
+
+    def create_grn_transaction_summary(self, grn_df, voucher_df):
+        """Create a comprehensive summary dashboard for GRN-Transaction analysis."""
+        st.markdown("### 📊 GRN-Transaction Analysis Summary")
+        
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total GRNs", f"{len(grn_df):,}")
+        
+        with col2:
+            st.metric("Total Vouchers", f"{len(voucher_df):,}")
+        
+        with col3:
+            grn_value = 0
+            if 'nett_grn_amt' in grn_df.columns:
+                grn_value = pd.to_numeric(grn_df['nett_grn_amt'], errors='coerce').sum()
+            st.metric("Total GRN Value", f"R{grn_value:,.2f}")
+        
+        with col4:
+            voucher_value = 0
+            if 'cheq_amt' in voucher_df.columns:
+                voucher_value = pd.to_numeric(voucher_df['cheq_amt'], errors='coerce').sum()
+            st.metric("Total Voucher Value", f"R{voucher_value:,.2f}")
+        
+        # Risk assessment
+        st.markdown("### 🚨 Risk Assessment Summary")
+        
+        risk_items = []
+        
+        # Check for major discrepancies
+        if grn_value > 0 and voucher_value > 0:
+            value_diff_pct = abs(grn_value - voucher_value) / grn_value * 100
+            if value_diff_pct > 10:
+                risk_items.append({
+                    'Risk Type': 'Value Mismatch',
+                    'Severity': 'High' if value_diff_pct > 25 else 'Medium',
+                    'Description': f'GRN vs Voucher value difference: {value_diff_pct:.1f}%',
+                    'Recommendation': 'Investigate payment completeness and accuracy'
+                })
+        
+        # Add other risk factors
+        grn_supplier_col = 'supplier_name' if 'supplier_name' in grn_df.columns else 'supplier'
+        voucher_supplier_col = 'payee_name' if 'payee_name' in voucher_df.columns else 'supplier'
+        
+        grn_suppliers = set(grn_df[grn_supplier_col].dropna())
+        voucher_suppliers = set(voucher_df[voucher_supplier_col].dropna())
+        
+        unmatched_suppliers = len(grn_suppliers - voucher_suppliers)
+        if unmatched_suppliers > 0:
+            risk_items.append({
+                'Risk Type': 'Unmatched Suppliers',
+                'Severity': 'Medium' if unmatched_suppliers < 10 else 'High',
+                'Description': f'{unmatched_suppliers} suppliers have GRNs but no payments',
+                'Recommendation': 'Review payment status for these suppliers'
+            })
+        
+        # Display risk summary
+        if risk_items:
+            risk_df = pd.DataFrame(risk_items)
+            
+            # Color code by severity
+            def highlight_severity(row):
+                if row['Severity'] == 'High':
+                    return ['background-color: #ffebee'] * len(row)
+                elif row['Severity'] == 'Medium':
+                    return ['background-color: #fff3e0'] * len(row)
+                else:
+                    return [''] * len(row)
+            
+            styled_risk = risk_df.style.apply(highlight_severity, axis=1)
+            st.dataframe(styled_risk, width='stretch', hide_index=True)
+        else:
+            st.success("✅ No major risks detected in GRN-Transaction analysis")
+        
+        # Recommended actions
+        st.markdown("### 💡 Recommended Actions")
+        
+        actions = [
+            "🔍 **Weekly Review**: Check for new unpaid GRNs and payment delays",
+            "💰 **Monthly Reconciliation**: Compare GRN values vs payment values by supplier",
+            "🚨 **Immediate Investigation**: Follow up on high-value unpaid GRNs",
+            "📋 **Data Quality**: Standardize supplier names across systems",
+            "⚡ **Automation**: Set up alerts for duplicate payments and unusual patterns",
+            "📊 **Reporting**: Generate monthly GRN-payment mismatch reports"
+        ]
+        
+        for action in actions:
+            st.markdown(f"- {action}")
 
     def create_pdf_analytics(self, filters=None):
         """Create comprehensive analytics for PDF-extracted data."""
