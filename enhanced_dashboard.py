@@ -2040,7 +2040,7 @@ class AdvancedStockDashboard:
                                       "<extra></extra>"
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="financial_outliers_scatter")
                     
                     # Show outlier summary
                     st.markdown("#### 🚨 Alert Summary:")
@@ -2111,7 +2111,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="price_volatility_analysis")
                         
                         # Volatility metrics
                         vol_col1, vol_col2, vol_col3 = st.columns(3)
@@ -2176,7 +2176,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="high_spending_suppliers")
                 else:
                     st.info("No suppliers with unusually high spending detected.")
             
@@ -2212,7 +2212,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="high_frequency_suppliers")
                 else:
                     st.info("No suppliers with unusually high transaction frequency detected.")
     
@@ -2265,7 +2265,7 @@ class AdvancedStockDashboard:
                             height=400
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="grn_quantity_outliers")
                         
                         # Outlier metrics
                         qty_col1, qty_col2, qty_col3 = st.columns(3)
@@ -2355,7 +2355,7 @@ class AdvancedStockDashboard:
                             barmode='overlay'
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="issue_quantity_outliers")
                         
                         # Outlier metrics
                         issue_col1, issue_col2, issue_col3 = st.columns(3)
@@ -2438,7 +2438,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="negative_stock_levels")
                         
                         st.error(f"🚨 ALERT: {len(negative_stock)} items have negative stock levels!")
                         st.dataframe(negative_stock.head(10), use_container_width=True)
@@ -2472,7 +2472,7 @@ class AdvancedStockDashboard:
                                 xaxis_tickangle=-45
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="zero_stock_high_activity")
                     else:
                         st.info("All items have positive stock levels.")
             else:
@@ -2539,7 +2539,7 @@ class AdvancedStockDashboard:
                             height=400
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="weekly_transaction_activity")
                         
                         # Weekend metrics
                         weekend_col1, weekend_col2, weekend_col3 = st.columns(3)
@@ -2615,7 +2615,7 @@ class AdvancedStockDashboard:
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="hourly_activity_pattern")
                             
                             # Activity metrics
                             activity_col1, activity_col2, activity_col3 = st.columns(3)
@@ -2698,7 +2698,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="after_hours_transactions")
                     
                     with col2:
                         # Transaction count by month
@@ -2734,7 +2734,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="bulk_transaction_pattern")
                     
                     # Summary of anomalies
                     if len(outlier_months) > 0 or len(outlier_count_months) > 0:
@@ -2780,7 +2780,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="rapid_successive_transactions")
             else:
                 st.info("No valid date data available for seasonal analysis")
         else:
@@ -2829,7 +2829,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="same_day_multi_supplier")
                         
                         # Multi-supplier metrics
                         multi_col1, multi_col2, multi_col3 = st.columns(3)
@@ -2963,7 +2963,7 @@ class AdvancedStockDashboard:
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="duplicate_transactions_analysis")
                             
                             # Ratio metrics
                             ratio_col1, ratio_col2, ratio_col3 = st.columns(3)
@@ -3115,7 +3115,7 @@ class AdvancedStockDashboard:
                     labels={'x': 'Official', 'y': 'Total Amount (R)'}
                 )
                 fig.update_layout(xaxis_tickangle=-45)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_patterns_overview")
                 
                 # Show official stats table
                 st.markdown("**Top Officials Summary:**")
@@ -3145,7 +3145,7 @@ class AdvancedStockDashboard:
                     title="Top Authorization Names (by Count)",
                     hole=0.4
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_compliance_metrics")
                 
                 # Show auth name stats table
                 st.markdown("**Top Authorization Names:**")
@@ -3213,7 +3213,7 @@ class AdvancedStockDashboard:
                 title="Vote Number Length Distribution",
                 labels={'x': 'Vote Number Length', 'y': 'Count'}
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="authorization_trends_timeline")
             
             # SCOA compliance metrics
             scoa_compliant = voucher_analysis['is_valid_scoa'].sum()
@@ -3267,7 +3267,7 @@ class AdvancedStockDashboard:
                     title="Spending by Economic Classification",
                     hole=0.4
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_inconsistencies")
         
         # SCOA compliance issues
         st.markdown("### 🚨 SCOA Compliance Issues")
@@ -3400,7 +3400,7 @@ class AdvancedStockDashboard:
                     labels={'x': 'Supplier', 'y': 'Total Value (R)'}
                 )
                 fig.update_layout(xaxis_tickangle=-45)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="scoa_structure_compliance")
                 
                 # PPE inconsistency checks
                 st.markdown("**PPE Inconsistency Checks:**")
@@ -3453,7 +3453,7 @@ class AdvancedStockDashboard:
                     title="Top Electrical Suppliers by Value",
                     hole=0.4
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="vote_structure_breakdown")
                 
                 # Electrical inconsistency checks
                 st.markdown("**Electrical Inconsistency Checks:**")
@@ -3495,7 +3495,7 @@ class AdvancedStockDashboard:
             title="Spending by Material Category",
             labels={'x': 'Category', 'y': 'Total Value (R)'}
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="scoa_validation_summary")
         
         # Summary table
         st.markdown("**Category Summary:**")
@@ -3553,7 +3553,7 @@ class AdvancedStockDashboard:
                 labels={'x': 'Amount Range', 'y': 'Number of Officials'}
             )
             fig.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="ppe_category_distribution")
             
             st.markdown("**Authorization Range Summary:**")
             display_range = range_summary.copy()
@@ -3586,7 +3586,7 @@ class AdvancedStockDashboard:
                 size='Total_Amount',
                 color='CV'
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="electrical_materials_breakdown")
             
             if len(high_freq_officials) > 0:
                 st.warning(f"⚠️ {len(high_freq_officials)} officials have high authorization frequency")
@@ -3782,7 +3782,7 @@ class AdvancedStockDashboard:
                             title="Unpaid GRN Value by PDF Linkage",
                             color='Category',
                             color_discrete_map={'PDF-Linked Unpaid': '#ff7f7f', 'Non-PDF Unpaid': '#ffb366'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="ppe_electrical_trends")
         
         # Payment timing analysis
         st.markdown("### ⏰ Payment Timing Analysis")
@@ -3837,7 +3837,7 @@ class AdvancedStockDashboard:
                     fig = px.bar(delay_df, x='Range', y='Count',
                                 title="Payment Delay Distribution",
                                 color='Range')
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="supplier_ppe_specialization")
                     
             except Exception as e:
                 st.warning(f"Could not analyze payment timing: {str(e)}")
@@ -3991,7 +3991,7 @@ class AdvancedStockDashboard:
                 
                 fig = px.pie(payment_breakdown, values='Value', names='Type',
                             title="Payment Value Distribution by PDF Linkage")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="materials_seasonal_patterns")
             
             # Supplier payment frequency analysis
             st.markdown("#### 🏢 Supplier Payment Frequency")
@@ -4301,7 +4301,7 @@ class AdvancedStockDashboard:
             
             fig = px.pie(linkage_data, values='Value', names='Type', 
                          title="GRN Value Distribution by PDF Linkage")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="enhanced_anomaly_detection")
         
         # Voucher Validation Analysis
         st.markdown("### ✅ Voucher Validation Analysis")
@@ -4499,7 +4499,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_official_patterns")
         
         with col2:
             # Monthly transaction volume
@@ -4530,7 +4530,7 @@ class AdvancedStockDashboard:
                     xaxis_tickangle=-45
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_value_analysis")
         
         # Top suppliers analysis
         if 'supplier_name' in hr185_df.columns and 'amount' in hr185_df.columns:
@@ -4563,7 +4563,7 @@ class AdvancedStockDashboard:
                 xaxis_tickangle=-45
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="authorization_monthly_trends")
             
             # Show data table
             st.markdown("#### 📊 Detailed Supplier Breakdown")
@@ -4628,7 +4628,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_threshold_analysis")
         
         with col2:
             # Document types
@@ -4653,7 +4653,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="multi_official_authorizations")
         
         # Reference analysis
         if 'reference' in hr990_df.columns and 'count' in hr990_df.columns:
@@ -4681,7 +4681,7 @@ class AdvancedStockDashboard:
                 xaxis_tickangle=-45
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="authorization_processing_time")
     
     def create_combined_pdf_analytics(self, hr185_df, hr990_df):
         """Create combined analytics for both PDF data sources."""
@@ -4779,7 +4779,7 @@ class AdvancedStockDashboard:
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_risk_assessment")
         
         # Recommendations
         st.markdown("### 💡 PDF Data Insights & Recommendations")
@@ -5149,7 +5149,7 @@ class AdvancedStockDashboard:
                     title="Invalid Vouchers by PDF Linkage",
                     color_discrete_sequence=['#ff9999', '#66b3ff']
                 )
-                st.plotly_chart(fig_pdf, use_container_width=True)
+                st.plotly_chart(fig_pdf, use_container_width=True, key="pdf_document_patterns")
             
             with col2:
                 # Value breakdown
@@ -5160,7 +5160,7 @@ class AdvancedStockDashboard:
                     color=pdf_summary['Total_Value_R'],
                     color_continuous_scale='Reds'
                 )
-                st.plotly_chart(fig_value, use_container_width=True)
+                st.plotly_chart(fig_value, use_container_width=True, key="pdf_value_correlation")
             
             # Insights for corrected analysis
             st.info("""
@@ -5190,7 +5190,7 @@ class AdvancedStockDashboard:
                 names=reason_summary.index,
                 title="Invalid Voucher References by Reason"
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, key="pdf_type_distribution")
         
         # Explanation of reasons
         st.subheader("🔍 Explanation of Invalid Reasons")
@@ -5249,7 +5249,7 @@ class AdvancedStockDashboard:
                     title="Invalid Voucher Value by Prefix",
                     labels={'x': 'Voucher Prefix', 'y': 'Total Value (R)'}
                 )
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, use_container_width=True, key="pdf_monthly_processing")
         
         # Date analysis
         st.subheader("📅 Date Analysis")
@@ -5273,7 +5273,7 @@ class AdvancedStockDashboard:
                     title="Invalid Voucher References Over Time",
                     labels={'x': 'Month', 'y': 'Total Value (R)'}
                 )
-                st.plotly_chart(fig_time, use_container_width=True)
+                st.plotly_chart(fig_time, use_container_width=True, key="pdf_processing_timeline")
         
         # Top invalid vouchers by value
         st.subheader("💰 Top Invalid Vouchers by Value")
