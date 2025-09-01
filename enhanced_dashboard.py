@@ -2615,7 +2615,7 @@ class AdvancedStockDashboard:
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True, key="hourly_activity_pattern")
+                            st.plotly_chart(fig, use_container_width=True, key="same_day_multi_supplier")
                             
                             # Activity metrics
                             activity_col1, activity_col2, activity_col3 = st.columns(3)
@@ -2829,7 +2829,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True, key="same_day_multi_supplier")
+                        st.plotly_chart(fig, use_container_width=True, key="multi_supplier_items")
                         
                         # Multi-supplier metrics
                         multi_col1, multi_col2, multi_col3 = st.columns(3)
