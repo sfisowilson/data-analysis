@@ -1,0 +1,6 @@
+File,Exists,Records,Has_Corrected_Logic,Missing_Columns,Status
+hr995_grn.csv,True,8346,True,[],✅ CORRECTED
+hr995_issue.csv,True,20297,True,[],✅ CORRECTED
+hr995_voucher.csv,True,28697,True,[],✅ CORRECTED
+individual_hr390_movement_data.csv,True,3,True,[],✅ CORRECTED
+individual_hr185_transactions.csv,True,2151,True,[],✅ CORRECTED
