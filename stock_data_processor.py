@@ -54,9 +54,17 @@ class StockDataProcessor:
             'document_type': ['document_type', 'doc_type', 'type', 'transaction_type']
         }
         
-        self.logger.info(f"Stock Data Processor initialized")
+        # Corrected business relationships
+        self.business_relationships = {
+            'issue_hr390': 'HR995Issue.Requisition No ↔ HR390.reference',
+            'grn_hr185': 'HR995GRN.Inv No ↔ HR185.reference',
+            'grn_voucher': 'HR995GRN.Voucher ↔ HR995VOUCHER.Voucher No'
+        }
+        
+        self.logger.info(f"Stock Data Processor initialized with corrected business logic")
         self.logger.info(f"Data folder: {self.data_folder}")
         self.logger.info(f"Output folder: {self.output_folder}")
+        self.logger.info("Corrected business relationships loaded")
     
     def _setup_logging(self):
         """Setup logging configuration."""
@@ -69,6 +77,66 @@ class StockDataProcessor:
             ]
         )
         self.logger = logging.getLogger(__name__)
+    
+    def normalize_reference(self, ref):
+        """Normalize reference numbers for proper data linkage."""
+        if pd.isna(ref):
+            return ref
+        
+        ref_str = str(ref).strip()
+        
+        # For numeric references, strip leading zeros and convert to int
+        if ref_str.isdigit() or (ref_str.startswith('0') and ref_str.lstrip('0').isdigit()):
+            try:
+                return int(ref_str.lstrip('0')) if ref_str.lstrip('0') else 0
+            except:
+                return ref_str
+        
+        return ref_str.upper()
+    
+    def apply_business_logic_corrections(self, df, data_type):
+        """Apply corrected business logic to data based on type."""
+        if df.empty:
+            return df
+        
+        corrected_df = df.copy()
+        
+        # Apply corrections based on data type
+        if data_type == 'hr995_grn':
+            # Normalize invoice numbers for GRN → HR185 linkage
+            if 'inv_no' in corrected_df.columns:
+                corrected_df['inv_no_normalized'] = corrected_df['inv_no'].apply(self.normalize_reference)
+            
+            # Normalize voucher references for GRN → Voucher linkage
+            if 'voucher' in corrected_df.columns:
+                corrected_df['voucher_normalized'] = corrected_df['voucher'].apply(
+                    lambda x: str(x).strip().upper() if pd.notna(x) else x
+                )
+        
+        elif data_type == 'hr995_issue':
+            # Normalize requisition numbers for Issue → HR390 linkage
+            if 'requisition_no' in corrected_df.columns:
+                corrected_df['requisition_no_normalized'] = corrected_df['requisition_no'].apply(self.normalize_reference)
+        
+        elif data_type == 'hr995_voucher':
+            # Normalize voucher numbers for Voucher linkage
+            if 'voucher_no' in corrected_df.columns:
+                corrected_df['voucher_no_normalized'] = corrected_df['voucher_no'].apply(
+                    lambda x: str(x).strip().upper() if pd.notna(x) else x
+                )
+        
+        elif data_type == 'hr390_movement':
+            # Normalize reference for HR390 linkage
+            if 'reference' in corrected_df.columns:
+                corrected_df['reference_normalized'] = corrected_df['reference'].apply(self.normalize_reference)
+        
+        elif data_type == 'hr185_transactions':
+            # Normalize reference for HR185 linkage
+            if 'reference' in corrected_df.columns:
+                corrected_df['reference_normalized'] = corrected_df['reference'].apply(self.normalize_reference)
+        
+        self.logger.info(f"Applied business logic corrections to {data_type}: {len(corrected_df)} records")
+        return corrected_df
     
     def load_txt_file(self, file_path: Path) -> pd.DataFrame:
         """
@@ -346,10 +414,15 @@ class StockDataProcessor:
                         df = self.clean_data(df)
                         
                         if not df.empty:
+                            # Determine report type for business logic application
+                            report_type = self._determine_report_type(file_path.name)
+                            
+                            # Apply corrected business logic based on data type
+                            df = self.apply_business_logic_corrections(df, report_type)
+                            
                             self.all_data.append(df)
                             
                             # Store by report type based on filename
-                            report_type = self._determine_report_type(file_path.name)
                             if report_type not in self.processed_data:
                                 self.processed_data[report_type] = []
                             self.processed_data[report_type].append(df)
@@ -357,6 +430,8 @@ class StockDataProcessor:
                             # Store individual file for separate CSV
                             individual_name = self._get_individual_file_name(file_path.name)
                             self.individual_files[individual_name] = df.copy()
+                            
+                            self.logger.info(f"Processed {file_path.name} as {report_type} with corrected business logic")
                 
                 except Exception as e:
                     self.logger.error(f"Failed to process file {file_path}: {str(e)}")
@@ -384,6 +459,8 @@ class StockDataProcessor:
             return 'hr995_issue'
         elif 'hr995redund' in filename_lower or 'redundant' in filename_lower:
             return 'hr995_redundant'
+        elif 'hr390' in filename_lower:
+            return 'hr390_movement'
         elif 'hr990' in filename_lower:
             return 'hr990_expenditure'
         elif 'hr185' in filename_lower:
@@ -680,11 +757,116 @@ class StockDataProcessor:
         
         self.logger.info("All reports generated successfully!")
         print("All reports generated successfully!")
+        
+        # Generate relationship validation report
+        self.generate_relationship_validation_report()
+    
+    def generate_relationship_validation_report(self):
+        """Generate a report validating the corrected business relationships."""
+        self.logger.info("Generating relationship validation report with corrected business logic...")
+        
+        validation_results = []
+        
+        try:
+            # Load the necessary datasets
+            grn_file = self.output_folder / 'hr995_grn.csv'
+            issue_file = self.output_folder / 'hr995_issue.csv'
+            voucher_file = self.output_folder / 'hr995_voucher.csv'
+            hr390_file = self.output_folder / 'individual_hr390_movement_data.csv'
+            hr185_file = self.output_folder / 'individual_hr185_transactions.csv'
+            
+            # Validate Issue → HR390 relationship
+            if issue_file.exists() and hr390_file.exists():
+                issue_df = pd.read_csv(issue_file)
+                hr390_df = pd.read_csv(hr390_file)
+                
+                if 'requisition_no_normalized' in issue_df.columns and 'reference_normalized' in hr390_df.columns:
+                    issue_refs = set(issue_df['requisition_no_normalized'].dropna())
+                    hr390_refs = set(hr390_df['reference_normalized'].dropna())
+                    
+                    linked_issues = issue_refs & hr390_refs
+                    coverage_rate = len(linked_issues) / len(issue_refs) * 100 if len(issue_refs) > 0 else 0
+                    
+                    validation_results.append({
+                        'Relationship': 'Issue → HR390',
+                        'Source_Records': len(issue_refs),
+                        'Target_Records': len(hr390_refs),
+                        'Linked_Records': len(linked_issues),
+                        'Coverage_Rate': f"{coverage_rate:.1f}%",
+                        'Status': 'Valid' if coverage_rate > 0 else 'No Links Found'
+                    })
+            
+            # Validate GRN → HR185 relationship
+            if grn_file.exists() and hr185_file.exists():
+                grn_df = pd.read_csv(grn_file)
+                hr185_df = pd.read_csv(hr185_file)
+                
+                if 'inv_no_normalized' in grn_df.columns and 'reference_normalized' in hr185_df.columns:
+                    grn_refs = set(grn_df['inv_no_normalized'].dropna())
+                    hr185_refs = set(hr185_df['reference_normalized'].dropna())
+                    
+                    linked_grns = grn_refs & hr185_refs
+                    coverage_rate = len(linked_grns) / len(grn_refs) * 100 if len(grn_refs) > 0 else 0
+                    
+                    validation_results.append({
+                        'Relationship': 'GRN → HR185',
+                        'Source_Records': len(grn_refs),
+                        'Target_Records': len(hr185_refs),
+                        'Linked_Records': len(linked_grns),
+                        'Coverage_Rate': f"{coverage_rate:.1f}%",
+                        'Status': 'Valid' if coverage_rate > 0 else 'No Links Found'
+                    })
+            
+            # Validate GRN → Voucher relationship
+            if grn_file.exists() and voucher_file.exists():
+                grn_df = pd.read_csv(grn_file)
+                voucher_df = pd.read_csv(voucher_file)
+                
+                if 'voucher_normalized' in grn_df.columns and 'voucher_no_normalized' in voucher_df.columns:
+                    grn_vouchers = set(grn_df['voucher_normalized'].dropna())
+                    actual_vouchers = set(voucher_df['voucher_no_normalized'].dropna())
+                    
+                    linked_vouchers = grn_vouchers & actual_vouchers
+                    coverage_rate = len(linked_vouchers) / len(grn_vouchers) * 100 if len(grn_vouchers) > 0 else 0
+                    
+                    validation_results.append({
+                        'Relationship': 'GRN → Voucher',
+                        'Source_Records': len(grn_vouchers),
+                        'Target_Records': len(actual_vouchers),
+                        'Linked_Records': len(linked_vouchers),
+                        'Coverage_Rate': f"{coverage_rate:.1f}%",
+                        'Status': 'Valid' if coverage_rate > 0 else 'No Links Found'
+                    })
+            
+            # Save validation report
+            if validation_results:
+                validation_df = pd.DataFrame(validation_results)
+                validation_file = self.output_folder / 'relationship_validation_report.csv'
+                validation_df.to_csv(validation_file, index=False)
+                
+                self.logger.info(f"Relationship validation report saved to {validation_file}")
+                print(f"\n✅ Relationship Validation Report Generated:")
+                print("=" * 60)
+                for result in validation_results:
+                    print(f"📊 {result['Relationship']}: {result['Coverage_Rate']} coverage ({result['Status']})")
+                print("=" * 60)
+            else:
+                self.logger.warning("No relationship validation results generated")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to generate relationship validation report: {str(e)}")
+            print(f"⚠️ Failed to generate relationship validation report: {str(e)}")
     
     def run(self):
-        """Run the complete data processing pipeline."""
-        self.logger.info("Starting Stock Data Processing Pipeline...")
-        print("Starting Stock Data Processing Pipeline...")
+        """Run the complete data processing pipeline with corrected business logic."""
+        self.logger.info("Starting Stock Data Processing Pipeline with Corrected Business Logic...")
+        print("Starting Stock Data Processing Pipeline with Corrected Business Logic...")
+        print("=" * 80)
+        print("🔗 Implementing Corrected Business Relationships:")
+        print("   • HR995Issue.Requisition No ↔ HR390.reference")
+        print("   • HR995GRN.Inv No ↔ HR185.reference") 
+        print("   • HR995GRN.Voucher ↔ HR995VOUCHER.Voucher No")
+        print("=" * 80)
         
         # Process all files
         self.process_all_files()
@@ -695,11 +877,12 @@ class StockDataProcessor:
         # Generate analytical reports
         self.generate_all_reports()
         
-        self.logger.info("Stock Data Processing Pipeline completed successfully!")
-        print("\n" + "="*60)
-        print("Stock Data Processing Pipeline completed successfully!")
-        print(f"Check the '{self.output_folder}' folder for all generated reports.")
-        print("="*60)
+        self.logger.info("Stock Data Processing Pipeline with corrected business logic completed successfully!")
+        print("\n" + "="*80)
+        print("✅ Stock Data Processing Pipeline with Corrected Business Logic Completed!")
+        print(f"📁 Check the '{self.output_folder}' folder for all generated reports.")
+        print("🔍 Review 'relationship_validation_report.csv' for business logic validation.")
+        print("="*80)
 
 
 def main():

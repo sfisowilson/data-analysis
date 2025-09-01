@@ -18,9 +18,11 @@ This document outlines the relationships between all data files in the system, t
 - `Item No` - Links to Stock Balance and HR390 (FOREIGN KEY)
 - `GRN Qty` - Quantity received
 - `Nett GRN Amt` - Value of goods received
-- `Voucher` - Links to HR995VOUCH (FOREIGN KEY)
+- `Voucher` - Links to HR995VOUCH.Voucher No (FOREIGN KEY)
 - `Store No` - Links to Stock Balance files
-- `Order No` - Purchase order reference
+- `Order No` - Purchase order reference (Links to HR995VOUCH.Order No)
+- `Inv No` - Invoice number (Links to HR185.reference)
+- `Supp Own Ref` - Supplier's internal reference (Links to HR185.Supplier's Own Ref)
 
 **Sample Data:**
 ```
@@ -33,13 +35,13 @@ Supplier No: 100060, GRN No: 27210, Item No: 210285, GRN Qty: 50.0, Nett GRN Amt
 **Purpose**: Records all inventory items issued/distributed from stores
 
 **Key Columns:**
-- `Requisition No` - Issue request number (PRIMARY KEY)
+- `Requisition No` - Issue request number (PRIMARY KEY, Links to HR390.reference)
 - `Issue Date` - Date of issue
 - `Item No` - Links to Stock Balance and HR390 (FOREIGN KEY)
 - `Issue Qty` - Quantity issued
 - `Issue Cost` - Value of items issued
 - `Store No` - Links to Stock Balance files
-- `Vote No` - Budget/department code
+- `Vote No` - Budget/department code (Links to HR390.vote_no)
 - `Fleet Unit No` - Vehicle/equipment reference
 - `Activity` - Purpose/project code
 
@@ -56,10 +58,10 @@ Requisition No: 49245, Item No: 108995, Issue Qty: 2.0, Issue Cost: 5499.0, Vote
 **Key Columns:**
 - `Payee Ref` - Supplier/payee reference (Links to Supplier files)
 - `Payee Name` - Name of recipient
-- `Voucher No` - Unique voucher number (PRIMARY KEY)
+- `Voucher No` - Unique voucher number (PRIMARY KEY, Links to HR995GRN.Voucher)
 - `Cheq Amt` - Payment amount
 - `Cheq Date` - Payment date
-- `Order No` - Links to GRN orders
+- `Order No` - Links to GRN orders (Links to HR995GRN.Order No)
 
 **Sample Data:**
 ```
@@ -89,8 +91,8 @@ Payee Ref: .AJ VAN DEN HEEVER, Voucher No: SINA000194, Cheq Amt: 826.00
 - `type` - Transaction type (ISS, GRN, Carried Forward, etc.)
 - `grn_qty`/`grn_value` - Receipt quantities/values
 - `issue_qty`/`issue_value` - Issue quantities/values
-- `reference` - Transaction reference number
-- `vote_no` - Budget code (Links to Issue Vote No)
+- `reference` - Transaction reference number (Links to HR995ISSUE.Requisition No)
+- `vote_no` - Budget code (Links to HR995ISSUE.Vote No)
 - `store` - Store location
 - `source_file` - Original PDF source
 
@@ -155,6 +157,9 @@ item_no: 200018, type: ISS, issue_qty: 200018.0, issue_value: 20230815.0, refere
 #### **HR185 Folder** - Transactions per Supplier (3 PDFs)
 - Date ranges: 202207-202306, 202307-202406, 202407-202506
 - **Purpose**: Supplier transaction summaries
+- **Key Linkages**:
+  - `reference` column ↔ HR995GRN.Inv No
+  - `Supplier's Own Ref` ↔ HR995GRN.Supp Own Ref
 
 #### **HR990 Folder** - Expenditure Statistics (3 PDFs)
 - Date ranges: 202207-202306, 202307-202406, 202407-202506
@@ -168,26 +173,34 @@ item_no: 200018, type: ISS, issue_qty: 200018.0, issue_value: 20230815.0, refere
 - **HR995GRN.Item No** ↔ **HR995ISSUE.Item No** ↔ **HR390.item_no** ↔ **Stock Balance.Item No**
 - This creates a complete item movement trail from receipt → storage → issue
 
-### Secondary Linkages:
+### Verified Business Linkages:
 
-1. **Supplier Chain:**
+1. **Issue-to-Movement Chain:**
+   ```
+   HR995ISSUE.Requisition No ↔ HR390.reference
+   HR995ISSUE.Vote No ↔ HR390.vote_no
+   ```
+
+2. **GRN-to-Supplier Transaction Chain:**
+   ```
+   HR995GRN.Inv No ↔ HR185.reference
+   HR995GRN.Supp Own Ref ↔ HR185.Supplier's Own Ref
+   ```
+
+3. **Financial Payment Chain:**
+   ```
+   HR995GRN.Voucher ↔ HR995VOUCH.Voucher No
+   HR995GRN.Order No ↔ HR995VOUCH.Order No
+   ```
+
+4. **Supplier Chain:**
    ```
    Supplier Files.Supplier No ↔ HR995GRN.Supplier No ↔ HR995VOUCH.Payee Ref
    ```
 
-2. **Financial Chain:**
-   ```
-   HR995GRN.Voucher ↔ HR995VOUCH.Voucher No ↔ HR995GRN.Order No
-   ```
-
-3. **Store/Location Chain:**
+5. **Store/Location Chain:**
    ```
    HR995GRN.Store No ↔ HR995ISSUE.Store No ↔ Stock Balance.Store No ↔ HR390.store
-   ```
-
-4. **Budget/Department Chain:**
-   ```
-   HR995ISSUE.Vote No ↔ HR390.vote_no
    ```
 
 ---

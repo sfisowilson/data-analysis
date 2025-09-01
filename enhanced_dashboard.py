@@ -260,6 +260,137 @@ class AdvancedStockDashboard:
         
         return filtered_df
     
+    def normalize_reference(self, ref):
+        """Normalize reference numbers for proper data linkage."""
+        if pd.isna(ref):
+            return ref
+        
+        ref_str = str(ref).strip()
+        
+        # For numeric references, strip leading zeros and convert to int
+        if ref_str.isdigit() or (ref_str.startswith('0') and ref_str.lstrip('0').isdigit()):
+            try:
+                return int(ref_str.lstrip('0')) if ref_str.lstrip('0') else 0
+            except:
+                return ref_str
+        
+        return ref_str.upper()
+    
+    def load_linked_data(self, filters=None):
+        """Load all data with proper business logic linkages applied."""
+        # Load base datasets
+        grn_df = self.load_data("hr995_grn.csv")
+        issue_df = self.load_data("hr995_issue.csv") 
+        voucher_df = self.load_data("hr995_voucher.csv")
+        hr390_df = self.load_data("output/individual_hr390_movement_data.csv")
+        hr185_df = self.load_data("individual_hr185_transactions.csv")
+        
+        # Apply normalization for proper linkages
+        if not grn_df.empty:
+            grn_df['inv_no_normalized'] = grn_df['inv_no'].apply(self.normalize_reference)
+            grn_df['voucher_normalized'] = grn_df['voucher'].apply(lambda x: str(x).strip().upper() if pd.notna(x) else x)
+        
+        if not issue_df.empty:
+            # HR995Issue 'Requisition No' links with HR390 'reference number'
+            issue_df['requisition_no_normalized'] = issue_df['requisition_no'].apply(self.normalize_reference)
+        
+        if not voucher_df.empty:
+            voucher_df['voucher_no_normalized'] = voucher_df['voucher_no'].apply(lambda x: str(x).strip().upper() if pd.notna(x) else x)
+        
+        if hr390_df is not None and not hr390_df.empty:
+            hr390_df['reference_normalized'] = hr390_df['reference'].apply(self.normalize_reference)
+        
+        if hr185_df is not None and not hr185_df.empty:
+            # HR995GRN 'Inv No' links to HR185 'reference' column
+            hr185_df['reference_normalized'] = hr185_df['reference'].apply(self.normalize_reference)
+        
+        # Create linked datasets with proper relationships
+        linked_data = {
+            'grn': grn_df,
+            'issue': issue_df,
+            'voucher': voucher_df,
+            'hr390': hr390_df,
+            'hr185': hr185_df
+        }
+        
+        # Apply filters to all datasets
+        if filters:
+            for key, df in linked_data.items():
+                if df is not None and not df.empty:
+                    linked_data[key] = self.apply_filters(df, filters)
+        
+        return linked_data
+    
+    def create_relationship_analysis(self, linked_data):
+        """Analyze data relationships using corrected business logic."""
+        grn_df = linked_data['grn']
+        issue_df = linked_data['issue']
+        voucher_df = linked_data['voucher']
+        hr390_df = linked_data['hr390']
+        hr185_df = linked_data['hr185']
+        
+        st.subheader("🔗 Data Relationship Analysis (Corrected)")
+        st.info("✅ **Using Corrected Linkages**: HR995Issue ↔ HR390, HR995GRN ↔ HR185, HR995GRN ↔ HR995Voucher")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("### 📋 Issue → HR390 Linkage")
+            if not issue_df.empty and hr390_df is not None and not hr390_df.empty:
+                # HR995Issue 'Requisition No' links with HR390 'reference number'
+                issue_refs = set(issue_df['requisition_no_normalized'].dropna())
+                hr390_refs = set(hr390_df['reference_normalized'].dropna())
+                
+                linked_issues = issue_refs & hr390_refs
+                unlinked_issues = issue_refs - hr390_refs
+                
+                st.metric("Issues with HR390 Link", len(linked_issues))
+                st.metric("Issues without HR390 Link", len(unlinked_issues))
+                
+                if len(issue_refs) > 0:
+                    linkage_rate = len(linked_issues) / len(issue_refs) * 100
+                    st.metric("Issue → HR390 Linkage Rate", f"{linkage_rate:.1f}%")
+            else:
+                st.warning("Issue or HR390 data not available")
+        
+        with col2:
+            st.markdown("### 📦 GRN → HR185 Linkage")
+            if not grn_df.empty and hr185_df is not None and not hr185_df.empty:
+                # HR995GRN 'Inv No' links to HR185 'reference' column
+                grn_refs = set(grn_df['inv_no_normalized'].dropna())
+                hr185_refs = set(hr185_df['reference_normalized'].dropna())
+                
+                linked_grns = grn_refs & hr185_refs
+                unlinked_grns = grn_refs - hr185_refs
+                
+                st.metric("GRNs with HR185 Link", len(linked_grns))
+                st.metric("GRNs without HR185 Link", len(unlinked_grns))
+                
+                if len(grn_refs) > 0:
+                    linkage_rate = len(linked_grns) / len(grn_refs) * 100
+                    st.metric("GRN → HR185 Linkage Rate", f"{linkage_rate:.1f}%")
+            else:
+                st.warning("GRN or HR185 data not available")
+        
+        with col3:
+            st.markdown("### 💳 GRN → Voucher Linkage")
+            if not grn_df.empty and not voucher_df.empty:
+                # HR995GRN 'Voucher' links to HR995VOUCHER 'Voucher No'
+                grn_vouchers = set(grn_df['voucher_normalized'].dropna())
+                actual_vouchers = set(voucher_df['voucher_no_normalized'].dropna())
+                
+                linked_vouchers = grn_vouchers & actual_vouchers
+                unlinked_vouchers = grn_vouchers - actual_vouchers
+                
+                st.metric("GRNs with Voucher Link", len(linked_vouchers))
+                st.metric("GRNs without Voucher Link", len(unlinked_vouchers))
+                
+                if len(grn_vouchers) > 0:
+                    linkage_rate = len(linked_vouchers) / len(grn_vouchers) * 100
+                    st.metric("GRN → Voucher Linkage Rate", f"{linkage_rate:.1f}%")
+            else:
+                st.warning("GRN or Voucher data not available")
+    
     def load_filtered_data(self, filename, filters=None):
         """Load data and apply filters if provided."""
         df = self.load_data(filename)
@@ -537,7 +668,7 @@ class AdvancedStockDashboard:
                 )
                 fig1.update_xaxes(tickangle=45, title="Period")
                 fig1.update_yaxes(title="Total Value (R)")
-                st.plotly_chart(fig1, use_container_width=True)
+                st.plotly_chart(fig1, use_container_width=True, key="grn_total_value_trend")
                 
                 # Transaction count trend
                 fig2 = px.bar(trends, x='period_display', y='count',
@@ -569,7 +700,7 @@ class AdvancedStockDashboard:
                 )
                 fig2.update_xaxes(tickangle=45, title="Period")
                 fig2.update_yaxes(title="Number of Transactions")
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, use_container_width=True, key="grn_transaction_count_trend")
                 
                 # Average transaction value
                 fig3 = px.line(trends, x='period_display', y='mean',
@@ -601,7 +732,7 @@ class AdvancedStockDashboard:
                 )
                 fig3.update_xaxes(tickangle=45, title="Period")
                 fig3.update_yaxes(title="Average Value (R)")
-                st.plotly_chart(fig3, use_container_width=True)
+                st.plotly_chart(fig3, use_container_width=True, key="grn_avg_transaction_value_trend")
             else:
                 st.warning("No valid time period data found for trend analysis")
         else:
@@ -645,7 +776,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Source:</b> GRN Records<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig1, width="stretch")
+                st.plotly_chart(fig1, width="stretch", key="supplier_top_performers")
             
             with col2:
                 fig2 = px.scatter(supplier_totals, x='count', y='mean', 
@@ -675,7 +806,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Source:</b> GRN Records<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig2, width="stretch")
+                st.plotly_chart(fig2, width="stretch", key="supplier_volume_vs_value")
             
             # Supplier concentration analysis
             fig3 = px.pie(supplier_totals.head(10), values='sum', names='supplier_name',
@@ -702,7 +833,7 @@ class AdvancedStockDashboard:
                               "<b>Data Source:</b> GRN Records<br>" +
                               "<extra></extra>"
             )
-            st.plotly_chart(fig3, width="stretch")
+            st.plotly_chart(fig3, width="stretch", key="supplier_concentration_pie")
     
     def create_category_analysis(self, grn_df):
         """Create category-based analysis."""
@@ -721,13 +852,13 @@ class AdvancedStockDashboard:
             with col1:
                 fig1 = px.treemap(category_analysis, path=['category'], values='sum',
                                  title='Category Spending Distribution (Treemap)')
-                st.plotly_chart(fig1, width="stretch")
+                st.plotly_chart(fig1, width="stretch", key="category_spending_treemap")
             
             with col2:
                 fig2 = px.bar(category_analysis, x='category', y='count',
                              title='Transaction Count by Category')
                 fig2.update_xaxes(tickangle=45)
-                st.plotly_chart(fig2, width="stretch")
+                st.plotly_chart(fig2, width="stretch", key="category_transaction_count")
     
     def create_detailed_financial_analysis(self, grn_df, voucher_df):
         """Create detailed financial analysis."""
@@ -741,7 +872,7 @@ class AdvancedStockDashboard:
                 fig1 = px.histogram(grn_df, x='nett_grn_amt', nbins=50,
                                    title='GRN Value Distribution')
                 fig1.update_layout(height=400)
-                st.plotly_chart(fig1, width="stretch")
+                st.plotly_chart(fig1, width="stretch", key="grn_value_distribution")
         
         with col2:
             if not voucher_df.empty and 'cheq_amt' in voucher_df.columns:
@@ -749,7 +880,7 @@ class AdvancedStockDashboard:
                 fig2 = px.box(voucher_df, y='cheq_amt',
                              title='Voucher Amount Distribution')
                 fig2.update_layout(height=400)
-                st.plotly_chart(fig2, width="stretch")
+                st.plotly_chart(fig2, width="stretch", key="voucher_amount_distribution")
     
     def create_inventory_analytics(self, filters=None):
         """Create inventory analytics section."""
@@ -798,10 +929,11 @@ class AdvancedStockDashboard:
                 
                 # Top moving items
                 top_items = movement_df.groupby('item_id')['total_quantity'].sum().sort_values(ascending=False).head(20)
+                top_items_df = pd.DataFrame({'item_id': top_items.index, 'total_quantity': top_items.values})
                 
-                fig1 = px.bar(x=top_items.values, y=top_items.index,
+                fig1 = px.bar(top_items_df, x='total_quantity', y='item_id',
                              title='Top 20 Items by Total Movement',
-                             labels={'x': 'Total Quantity', 'y': 'Item ID'},
+                             labels={'total_quantity': 'Total Quantity', 'item_id': 'Item ID'},
                              orientation='h')
                 fig1.update_layout(
                     height=600,
@@ -825,7 +957,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Sources:</b> GRN & Issue Records<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig1, width="stretch")
+                st.plotly_chart(fig1, width="stretch", key="top_stock_movement_items")
                 
                 # Movement by type
                 movement_summary = movement_df.groupby('movement_type')['total_quantity'].sum().reset_index()
@@ -853,7 +985,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Sources:</b> GRN & Issue Records<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig2, width="stretch")
+                st.plotly_chart(fig2, width="stretch", key="stock_movement_distribution")
             else:
                 st.warning("Required columns for stock movement analysis not found")
         else:
@@ -896,14 +1028,14 @@ class AdvancedStockDashboard:
                          title='Top 15 Items by Turnover Ratio',
                          labels={'turnover_ratio': 'Turnover Ratio', 'item_id': 'Item ID'})
             fig1.update_xaxes(tickangle=45)
-            st.plotly_chart(fig1, width="stretch")
+            st.plotly_chart(fig1, width="stretch", key="top_turnover_items")
             
             # Turnover distribution
             fig2 = px.scatter(turnover_df, x='received', y='issued',
                              hover_data=['item_id'],
                              title='Received vs Issued Quantities',
                              labels={'received': 'Received Quantity', 'issued': 'Issued Quantity'})
-            st.plotly_chart(fig2, width="stretch")
+            st.plotly_chart(fig2, width="stretch", key="received_vs_issued_scatter")
         else:
             st.warning("Required columns for turnover analysis not found")
     
@@ -917,11 +1049,12 @@ class AdvancedStockDashboard:
             # Show stock adjustments summary
             if 'source_file' in stock_df.columns:
                 adjustment_summary = stock_df['source_file'].value_counts()
+                adjustment_df = pd.DataFrame({'source_file': adjustment_summary.index, 'count': adjustment_summary.values})
                 
-                fig = px.bar(x=adjustment_summary.values, y=adjustment_summary.index,
+                fig = px.bar(adjustment_df, x='count', y='source_file',
                            title='Stock Adjustments by Source',
                            orientation='h')
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, width="stretch", key="stock_adjustments_by_source")
         else:
             st.warning("No stock adjustment data available")
     
@@ -995,7 +1128,7 @@ class AdvancedStockDashboard:
                               "<b>Data Source:</b> GRN Records<br>" +
                               "<extra></extra>"
             )
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key="supplier_performance_bubble")
             
             # Top performers table
             st.subheader("Top 20 Suppliers by Value")
@@ -1012,8 +1145,9 @@ class AdvancedStockDashboard:
             # Show supplier data summary
             if 'source_file' in suppliers_df.columns:
                 supplier_sources = suppliers_df['source_file'].value_counts()
+                supplier_sources_df = pd.DataFrame({'source_file': supplier_sources.index, 'count': supplier_sources.values})
                 
-                fig = px.pie(values=supplier_sources.values, names=supplier_sources.index,
+                fig = px.pie(supplier_sources_df, values='count', names='source_file',
                            title='Supplier Data Sources')
                 fig.update_layout(
                     annotations=[
@@ -1037,7 +1171,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Source:</b> Supplier Master Data<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, width="stretch", key="supplier_type_distribution")
         else:
             st.warning("No supplier master data available")
     
@@ -1065,30 +1199,314 @@ class AdvancedStockDashboard:
                             color='supplier_name',
                             title='Top 5 Suppliers - Monthly Activity Trends')
                 fig.update_xaxes(tickangle=45)
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, width="stretch", key="supplier_monthly_trends")
     
     def create_operational_analytics(self, filters=None):
-        """Create operational analytics section."""
+        """Create operational analytics with corrected relationship analysis and authorization."""
         st.header("⚙️ Operational Analytics")
-        
-        audit_df = self.load_filtered_data("objective_2_stock_audit_trail.csv", filters)
-        process_df = self.load_filtered_data("objective_4_end_to_end_process.csv", filters)
         
         # Show filter status
         if filters and filters.get('supplier') and filters['supplier'] != "All Suppliers":
             st.info(f"📊 Filtered by Supplier: **{filters['supplier']}**")
         
-        tab1, tab2, tab3 = st.tabs(["🔍 Audit Trail", "🔄 Process Flow", "📊 Efficiency"])
+        # Load linked data with corrected relationships
+        linked_data = self.load_linked_data(filters)
+        
+        # Load additional operational datasets
+        audit_df = self.load_data("objective_2_stock_audit_trail.csv")
+        process_df = self.load_data("objective_4_end_to_end_process.csv")
+        voucher_df = self.load_data("hr995_voucher.csv")
+        
+        # Create tabs for different operational views
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "🔗 Data Relationships",
+            "🔄 Process Flow", 
+            "🔐 Authorization & SCOA",
+            "📋 Audit Trail", 
+            "⏱️ Processing Times", 
+            "🎯 Performance Metrics"
+        ])
         
         with tab1:
-            self.create_audit_analysis(audit_df)
+            self.create_relationship_analysis(linked_data)
         
         with tab2:
-            self.create_process_analysis(process_df)
+            self.create_process_flow_analysis(linked_data['grn'], linked_data['issue'], process_df)
         
         with tab3:
-            self.create_efficiency_analysis(audit_df)
+            if voucher_df is not None and not voucher_df.empty:
+                self.create_authorization_analysis(voucher_df)
+            else:
+                st.warning("Voucher data not available for authorization and SCOA analysis.")
+        
+        with tab4:
+            self.create_audit_trail_analysis(audit_df)
+        
+        with tab5:
+            self.create_processing_time_analysis(linked_data['grn'], linked_data['issue'])
+        
+        with tab6:
+            self.create_performance_metrics(linked_data['grn'], linked_data['issue'])
     
+    def create_process_flow_analysis(self, grn_df, issue_df, process_df):
+        """Analyze process flow with corrected data relationships."""
+        st.subheader("🔄 Process Flow Analysis (Corrected)")
+        st.info("✅ Analysis using corrected data relationships and linkages")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📦 GRN → Issue Process")
+            if not grn_df.empty and not issue_df.empty:
+                # Match items between GRN and Issue using item codes
+                item_col_grn = 'item_no' if 'item_no' in grn_df.columns else 'item_code'
+                item_col_issue = 'item_no' if 'item_no' in issue_df.columns else 'item_code'
+                
+                if item_col_grn in grn_df.columns and item_col_issue in issue_df.columns:
+                    grn_items = set(grn_df[item_col_grn].dropna())
+                    issue_items = set(issue_df[item_col_issue].dropna())
+                    
+                    common_items = grn_items & issue_items
+                    grn_only_items = grn_items - issue_items
+                    issue_only_items = issue_items - grn_items
+                    
+                    st.metric("Items in Both GRN & Issue", len(common_items))
+                    st.metric("Items GRN Only", len(grn_only_items))
+                    st.metric("Items Issue Only", len(issue_only_items))
+                    
+                    # Process completion rate
+                    if len(grn_items) > 0:
+                        completion_rate = len(common_items) / len(grn_items) * 100
+                        st.metric("Process Completion Rate", f"{completion_rate:.1f}%")
+            else:
+                st.warning("GRN or Issue data not available")
+        
+        with col2:
+            st.markdown("### 💳 Payment Process Status")
+            if not grn_df.empty and 'voucher_normalized' in grn_df.columns:
+                # Payment status analysis
+                grns_with_vouchers = grn_df['voucher_normalized'].notna().sum()
+                grns_without_vouchers = grn_df['voucher_normalized'].isna().sum()
+                
+                st.metric("GRNs with Vouchers", grns_with_vouchers)
+                st.metric("GRNs without Vouchers", grns_without_vouchers)
+                
+                if len(grn_df) > 0:
+                    voucher_rate = grns_with_vouchers / len(grn_df) * 100
+                    st.metric("Voucher Assignment Rate", f"{voucher_rate:.1f}%")
+        
+        # Process timing analysis
+        if process_df is not None and not process_df.empty:
+            st.markdown("### ⏱️ Process Timing Analysis")
+            
+            if 'process_step' in process_df.columns and 'duration' in process_df.columns:
+                step_timing = process_df.groupby('process_step')['duration'].agg(['mean', 'median', 'std']).round(2)
+                
+                fig = px.bar(
+                    x=step_timing.index,
+                    y=step_timing['mean'],
+                    title="Average Process Step Duration",
+                    labels={'x': 'Process Step', 'y': 'Average Duration'}
+                )
+                st.plotly_chart(fig, use_container_width=True, key="process_step_duration")
+    
+    def create_audit_trail_analysis(self, audit_df):
+        """Analyze audit trail data with enhanced insights."""
+        st.subheader("📋 Audit Trail Analysis")
+        
+        if audit_df is None or audit_df.empty:
+            st.warning("No audit trail data available.")
+            return
+        
+        # Key audit metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Audit Records", f"{len(audit_df):,}")
+        
+        with col2:
+            if 'transaction_type' in audit_df.columns:
+                st.metric("Transaction Types", audit_df['transaction_type'].nunique())
+        
+        with col3:
+            if 'user_id' in audit_df.columns:
+                st.metric("Unique Users", audit_df['user_id'].nunique())
+        
+        with col4:
+            if 'date' in audit_df.columns:
+                date_range = audit_df['date'].max() - audit_df['date'].min()
+                st.metric("Audit Period (Days)", f"{date_range.days}")
+        
+        # Audit activity over time
+        if 'date' in audit_df.columns:
+            st.markdown("### 📅 Audit Activity Timeline")
+            
+            audit_df['date'] = pd.to_datetime(audit_df['date'], errors='coerce')
+            daily_activity = audit_df.groupby(audit_df['date'].dt.date).size().reset_index()
+            daily_activity.columns = ['date', 'activity_count']
+            
+            fig = px.line(
+                daily_activity,
+                x='date',
+                y='activity_count',
+                title="Daily Audit Activity",
+                labels={'activity_count': 'Number of Audit Records'}
+            )
+            st.plotly_chart(fig, use_container_width=True, key="daily_audit_activity")
+    
+    def create_processing_time_analysis(self, grn_df, issue_df):
+        """Analyze processing times between related transactions."""
+        st.subheader("⏱️ Processing Time Analysis")
+        
+        if grn_df.empty or issue_df.empty:
+            st.warning("Insufficient data for processing time analysis.")
+            return
+        
+        # Date columns for analysis
+        grn_date_col = None
+        issue_date_col = None
+        
+        for col in ['period_date', 'date', 'grn_date']:
+            if col in grn_df.columns and grn_df[col].notna().any():
+                grn_date_col = col
+                break
+        
+        for col in ['period_date', 'date', 'issue_date']:
+            if col in issue_df.columns and issue_df[col].notna().any():
+                issue_date_col = col
+                break
+        
+        if grn_date_col and issue_date_col:
+            st.markdown("### 📦 GRN to Issue Processing Time")
+            
+            # Find matching items with timing
+            item_col_grn = 'item_no' if 'item_no' in grn_df.columns else 'item_code'
+            item_col_issue = 'item_no' if 'item_no' in issue_df.columns else 'item_code'
+            
+            if item_col_grn in grn_df.columns and item_col_issue in issue_df.columns:
+                # Merge on item code to find processing times
+                grn_summary = grn_df.groupby(item_col_grn)[grn_date_col].min().reset_index()
+                grn_summary.columns = ['item_code', 'grn_date']
+                
+                issue_summary = issue_df.groupby(item_col_issue)[issue_date_col].max().reset_index()
+                issue_summary.columns = ['item_code', 'issue_date']
+                
+                timing_analysis = grn_summary.merge(issue_summary, on='item_code', how='inner')
+                timing_analysis['processing_days'] = (timing_analysis['issue_date'] - timing_analysis['grn_date']).dt.days
+                
+                # Filter reasonable processing times
+                timing_analysis = timing_analysis[
+                    (timing_analysis['processing_days'] >= 0) & 
+                    (timing_analysis['processing_days'] <= 365)
+                ]
+                
+                if len(timing_analysis) > 0:
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        avg_processing = timing_analysis['processing_days'].mean()
+                        st.metric("Average Processing Time", f"{avg_processing:.1f} days")
+                    
+                    with col2:
+                        median_processing = timing_analysis['processing_days'].median()
+                        st.metric("Median Processing Time", f"{median_processing:.1f} days")
+                    
+                    with col3:
+                        max_processing = timing_analysis['processing_days'].max()
+                        st.metric("Longest Processing Time", f"{max_processing:.0f} days")
+                    
+                    # Distribution chart
+                    fig = px.histogram(
+                        timing_analysis,
+                        x='processing_days',
+                        title="Processing Time Distribution",
+                        labels={'processing_days': 'Processing Time (Days)', 'count': 'Number of Items'}
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key="processing_time_distribution")
+                else:
+                    st.info("No matching items found between GRN and Issue data for timing analysis.")
+        else:
+            st.warning("Date columns not available for processing time analysis.")
+    
+    def create_performance_metrics(self, grn_df, issue_df):
+        """Create comprehensive performance metrics dashboard."""
+        st.subheader("🎯 Performance Metrics")
+        
+        # Key performance indicators
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if not grn_df.empty:
+                avg_grn_value = pd.to_numeric(grn_df['nett_grn_amt'], errors='coerce').mean()
+                st.metric("Avg GRN Value", f"R{avg_grn_value:,.2f}")
+        
+        with col2:
+            if not issue_df.empty and 'quantity' in issue_df.columns:
+                avg_issue_qty = pd.to_numeric(issue_df['quantity'], errors='coerce').mean()
+                st.metric("Avg Issue Quantity", f"{avg_issue_qty:.2f}")
+        
+        with col3:
+            # Transaction efficiency
+            if not grn_df.empty and not issue_df.empty:
+                efficiency = len(issue_df) / len(grn_df) * 100 if len(grn_df) > 0 else 0
+                st.metric("Transaction Efficiency", f"{efficiency:.1f}%")
+        
+        with col4:
+            # Data quality score
+            quality_score = 100  # Start with perfect score
+            if not grn_df.empty:
+                # Deduct for missing vouchers
+                missing_vouchers = grn_df['voucher'].isna().sum() / len(grn_df) * 20
+                quality_score -= missing_vouchers
+                
+                # Deduct for missing suppliers
+                missing_suppliers = grn_df['supplier_name'].isna().sum() / len(grn_df) * 15
+                quality_score -= missing_suppliers
+            
+            st.metric("Data Quality Score", f"{max(0, quality_score):.1f}/100")
+        
+        # Performance trends
+        st.markdown("### 📈 Performance Trends")
+        
+        if not grn_df.empty and 'period_date' in grn_df.columns:
+            monthly_performance = grn_df.groupby(grn_df['period_date'].dt.to_period('M')).agg({
+                'nett_grn_amt': ['sum', 'count', 'mean']
+            }).round(2)
+            
+            monthly_performance.columns = ['Total_Value', 'Transaction_Count', 'Avg_Value']
+            monthly_performance = monthly_performance.reset_index()
+            monthly_performance['period'] = monthly_performance['period_date'].astype(str)
+            
+            fig = make_subplots(
+                rows=2, cols=1,
+                subplot_titles=('Monthly Transaction Value', 'Monthly Transaction Count'),
+                specs=[[{"secondary_y": False}], [{"secondary_y": False}]]
+            )
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=monthly_performance['period'],
+                    y=monthly_performance['Total_Value'],
+                    mode='lines+markers',
+                    name='Total Value'
+                ),
+                row=1, col=1
+            )
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=monthly_performance['period'],
+                    y=monthly_performance['Transaction_Count'],
+                    mode='lines+markers',
+                    name='Transaction Count',
+                    line=dict(color='orange')
+                ),
+                row=2, col=1
+            )
+            
+            fig.update_layout(height=600, title_text="Monthly Performance Metrics")
+            st.plotly_chart(fig, use_container_width=True, key="monthly_performance_metrics")
+
     def create_audit_analysis(self, audit_df):
         """Create audit trail analysis."""
         st.subheader("Audit Trail Analysis")
@@ -1122,7 +1540,7 @@ class AdvancedStockDashboard:
                                   "<b>Data Source:</b> Audit Trail Records<br>" +
                                   "<extra></extra>"
                 )
-                st.plotly_chart(fig1, width="stretch")
+                st.plotly_chart(fig1, width="stretch", key="audit_transaction_types")
             
             # Audit timeline
             if 'date' in audit_df.columns:
@@ -1136,7 +1554,7 @@ class AdvancedStockDashboard:
                     
                     fig2 = px.bar(monthly_audit, x='year_month_str', y='count',
                                  title='Monthly Audit Activity')
-                    st.plotly_chart(fig2, width="stretch")
+                    st.plotly_chart(fig2, width="stretch", key="monthly_audit_activity")
         else:
             st.warning("No audit trail data available")
     
@@ -1151,7 +1569,7 @@ class AdvancedStockDashboard:
                 
                 fig = px.funnel(y=stage_dist.index, x=stage_dist.values,
                                title='Process Stage Distribution')
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, width="stretch", key="process_stage_distribution")
             
             st.info(f"Analyzed {len(process_df)} process records")
         else:
@@ -1168,7 +1586,7 @@ class AdvancedStockDashboard:
             fig = px.bar(x=official_productivity.values, y=official_productivity.index,
                         title='Top 10 Officials by Transaction Volume',
                         orientation='h')
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", key="top_officials_by_volume")
         else:
             st.info("Efficiency analysis requires official data")
     
@@ -1241,48 +1659,282 @@ class AdvancedStockDashboard:
         }
     
     def create_anomaly_detection(self, filters=None):
-        """Create comprehensive anomaly detection and alerts section."""
+        """Create comprehensive anomaly detection with corrected data relationships."""
         st.header("🚨 Anomaly Detection & Risk Analysis")
-        st.markdown("*Identify unusual patterns, outliers, and potential issues in your stock data*")
+        st.markdown("*Advanced anomaly detection using corrected data relationships and business logic*")
         
         # Show filter status
         if filters and filters.get('supplier') and filters['supplier'] != "All Suppliers":
             st.info(f"📊 Filtered by Supplier: **{filters['supplier']}**")
         
-        # Load data for anomaly detection
-        grn_df = self.load_filtered_data("hr995_grn.csv", filters)
-        issue_df = self.load_filtered_data("hr995_issue.csv", filters)
-        voucher_df = self.load_filtered_data("hr995_voucher.csv", filters)
-        stock_df = self.load_filtered_data("all_stock_data.csv", filters)
+        # Load linked data with corrected relationships
+        linked_data = self.load_linked_data(filters)
+        grn_df = linked_data['grn']
+        issue_df = linked_data['issue']
+        hr390_df = linked_data['hr390']
+        hr185_df = linked_data['hr185']
         
-        if not any(len(df) > 0 for df in [grn_df, issue_df, voucher_df, stock_df]):
+        # Load voucher data separately (not filtered for anomaly detection)
+        voucher_df = self.load_data("hr995_voucher.csv")
+        
+        if not any(len(df) > 0 if df is not None else False for df in [grn_df, issue_df, voucher_df]):
             st.warning("No data available for anomaly detection.")
             return
         
-        # Create anomaly detection subsections
+        # Create tabs for different anomaly types
         anomaly_tab1, anomaly_tab2, anomaly_tab3, anomaly_tab4, anomaly_tab5 = st.tabs([
-            "💸 Financial Anomalies",
-            "📊 Volume Anomalies", 
-            "⏰ Time-based Anomalies",
-            "🎯 Pattern Anomalies",
-            "🔗 GRN-Transaction Analysis"
+            "� Financial Anomalies",
+            "� Relationship Anomalies", 
+            "📊 Data Quality Issues",
+            "⏱️ Timing Anomalies",
+            "🎯 Pattern Anomalies"
         ])
         
         with anomaly_tab1:
             self.create_financial_anomalies(grn_df, voucher_df)
-        
-        with anomaly_tab2:
             self.create_volume_anomalies(grn_df, issue_df)
         
+        with anomaly_tab2:
+            self.create_relationship_anomalies(linked_data)
+        
         with anomaly_tab3:
-            self.create_time_anomalies(grn_df, issue_df)
+            self.create_data_quality_anomalies(grn_df, issue_df)
         
         with anomaly_tab4:
-            self.create_pattern_anomalies(grn_df, issue_df, stock_df)
+            self.create_timing_anomalies(grn_df, issue_df)
         
         with anomaly_tab5:
-            self.create_grn_transaction_analysis(grn_df, voucher_df)
+            self.create_pattern_anomalies(grn_df, issue_df, hr390_df)
     
+    
+    def create_relationship_anomalies(self, linked_data):
+        """Detect anomalies in data relationships using corrected business logic."""
+        st.subheader("🔗 Relationship Anomalies (Corrected)")
+        st.info("✅ Analysis using corrected data relationships: Issue ↔ HR390, GRN ↔ HR185, GRN ↔ Voucher")
+        
+        grn_df = linked_data['grn']
+        issue_df = linked_data['issue']
+        voucher_df = linked_data['voucher']
+        hr390_df = linked_data['hr390']
+        hr185_df = linked_data['hr185']
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 🚨 Orphaned Records Analysis")
+            
+            # Orphaned Issues (no HR390 link)
+            if not issue_df.empty and hr390_df is not None and not hr390_df.empty:
+                issue_refs = set(issue_df['requisition_no_normalized'].dropna())
+                hr390_refs = set(hr390_df['reference_normalized'].dropna())
+                
+                orphaned_issues = issue_refs - hr390_refs
+                if len(orphaned_issues) > 0:
+                    st.metric("🔴 Orphaned Issues (No HR390)", len(orphaned_issues))
+                    
+                    # Calculate value impact
+                    orphaned_issue_records = issue_df[issue_df['requisition_no_normalized'].isin(orphaned_issues)]
+                    if 'amount' in orphaned_issue_records.columns:
+                        orphaned_value = pd.to_numeric(orphaned_issue_records['amount'], errors='coerce').sum()
+                        st.metric("💰 Orphaned Issue Value", f"R{orphaned_value:,.2f}")
+                else:
+                    st.success("✅ All Issues linked to HR390")
+            
+            # Orphaned GRNs (no HR185 link)
+            if not grn_df.empty and hr185_df is not None and not hr185_df.empty:
+                grn_refs = set(grn_df['inv_no_normalized'].dropna())
+                hr185_refs = set(hr185_df['reference_normalized'].dropna())
+                
+                orphaned_grns = grn_refs - hr185_refs
+                if len(orphaned_grns) > 0:
+                    st.metric("🔴 Orphaned GRNs (No HR185)", len(orphaned_grns))
+                    
+                    # Calculate value impact
+                    orphaned_grn_records = grn_df[grn_df['inv_no_normalized'].isin(orphaned_grns)]
+                    if 'nett_grn_amt' in orphaned_grn_records.columns:
+                        orphaned_value = pd.to_numeric(orphaned_grn_records['nett_grn_amt'], errors='coerce').sum()
+                        st.metric("💰 Orphaned GRN Value", f"R{orphaned_value:,.2f}")
+                else:
+                    st.success("✅ All GRNs linked to HR185")
+        
+        with col2:
+            st.markdown("### ⚠️ Invalid References")
+            
+            # Invalid voucher references
+            if not grn_df.empty and voucher_df is not None and not voucher_df.empty:
+                grn_voucher_refs = set(grn_df['voucher_normalized'].dropna())
+                actual_vouchers = set(voucher_df['voucher_no_normalized'].dropna())
+                
+                invalid_vouchers = grn_voucher_refs - actual_vouchers
+                if len(invalid_vouchers) > 0:
+                    st.metric("❌ Invalid Voucher References", len(invalid_vouchers))
+                    
+                    # Calculate value impact
+                    invalid_grn_records = grn_df[grn_df['voucher_normalized'].isin(invalid_vouchers)]
+                    if 'nett_grn_amt' in invalid_grn_records.columns:
+                        invalid_value = pd.to_numeric(invalid_grn_records['nett_grn_amt'], errors='coerce').sum()
+                        st.metric("💰 Invalid Voucher Value", f"R{invalid_value:,.2f}")
+                        
+                        # Show validation rate
+                        if len(grn_voucher_refs) > 0:
+                            validation_rate = len(actual_vouchers & grn_voucher_refs) / len(grn_voucher_refs) * 100
+                            st.metric("📈 Voucher Validation Rate", f"{validation_rate:.1f}%")
+                else:
+                    st.success("✅ All voucher references valid")
+        
+        # Relationship coverage summary
+        st.markdown("### 📊 Relationship Coverage Summary")
+        
+        coverage_data = []
+        
+        # Issue → HR390 coverage
+        if not issue_df.empty and hr390_df is not None and not hr390_df.empty:
+            issue_coverage = len(set(issue_df['requisition_no_normalized'].dropna()) & 
+                               set(hr390_df['reference_normalized'].dropna())) / len(set(issue_df['requisition_no_normalized'].dropna())) * 100
+            coverage_data.append({'Relationship': 'Issue → HR390', 'Coverage': issue_coverage})
+        
+        # GRN → HR185 coverage
+        if not grn_df.empty and hr185_df is not None and not hr185_df.empty:
+            grn_coverage = len(set(grn_df['inv_no_normalized'].dropna()) & 
+                              set(hr185_df['reference_normalized'].dropna())) / len(set(grn_df['inv_no_normalized'].dropna())) * 100
+            coverage_data.append({'Relationship': 'GRN → HR185', 'Coverage': grn_coverage})
+        
+        # GRN → Voucher coverage
+        if not grn_df.empty and voucher_df is not None and not voucher_df.empty:
+            voucher_coverage = len(set(grn_df['voucher_normalized'].dropna()) & 
+                                 set(voucher_df['voucher_no_normalized'].dropna())) / len(set(grn_df['voucher_normalized'].dropna())) * 100
+            coverage_data.append({'Relationship': 'GRN → Voucher', 'Coverage': voucher_coverage})
+        
+        if coverage_data:
+            coverage_df = pd.DataFrame(coverage_data)
+            
+            fig = px.bar(
+                coverage_df,
+                x='Relationship',
+                y='Coverage',
+                title="Data Relationship Coverage Analysis",
+                color='Coverage',
+                color_continuous_scale='RdYlGn',
+                range_color=[0, 100]
+            )
+            fig.update_layout(yaxis_title="Coverage Percentage (%)")
+            st.plotly_chart(fig, use_container_width=True, key="data_coverage_metrics")
+    
+    def create_data_quality_anomalies(self, grn_df, issue_df):
+        """Detect data quality issues and inconsistencies."""
+        st.subheader("📊 Data Quality Issues")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 🔍 Missing Data Analysis")
+            
+            # GRN missing data
+            if not grn_df.empty:
+                missing_analysis = []
+                for col in ['supplier_name', 'item_no', 'voucher', 'nett_grn_amt']:
+                    if col in grn_df.columns:
+                        missing_count = grn_df[col].isna().sum()
+                        missing_pct = missing_count / len(grn_df) * 100
+                        missing_analysis.append({
+                            'Column': col,
+                            'Missing Count': missing_count,
+                            'Missing %': f"{missing_pct:.1f}%"
+                        })
+                
+                if missing_analysis:
+                    st.dataframe(pd.DataFrame(missing_analysis), use_container_width=True, hide_index=True)
+            
+            # Issue missing data
+            if not issue_df.empty:
+                st.markdown("#### Issue Data Missing Fields")
+                issue_missing = []
+                for col in ['requisition_no', 'item_no', 'quantity']:
+                    if col in issue_df.columns:
+                        missing_count = issue_df[col].isna().sum()
+                        missing_pct = missing_count / len(issue_df) * 100
+                        issue_missing.append({
+                            'Column': col,
+                            'Missing Count': missing_count,
+                            'Missing %': f"{missing_pct:.1f}%"
+                        })
+                
+                if issue_missing:
+                    st.dataframe(pd.DataFrame(issue_missing), use_container_width=True, hide_index=True)
+        
+        with col2:
+            st.markdown("### ⚠️ Data Inconsistencies")
+            
+            # Negative values
+            negative_issues = []
+            
+            if not grn_df.empty and 'nett_grn_amt' in grn_df.columns:
+                negative_grn = (pd.to_numeric(grn_df['nett_grn_amt'], errors='coerce') < 0).sum()
+                if negative_grn > 0:
+                    negative_issues.append(f"🔴 {negative_grn} GRN records with negative amounts")
+            
+            if not issue_df.empty and 'quantity' in issue_df.columns:
+                negative_qty = (pd.to_numeric(issue_df['quantity'], errors='coerce') < 0).sum()
+                if negative_qty > 0:
+                    negative_issues.append(f"🔴 {negative_qty} Issue records with negative quantities")
+            
+            # Duplicate detection
+            if not grn_df.empty and 'grn_no' in grn_df.columns:
+                duplicate_grns = grn_df['grn_no'].duplicated().sum()
+                if duplicate_grns > 0:
+                    negative_issues.append(f"🟡 {duplicate_grns} duplicate GRN numbers")
+            
+            if not issue_df.empty and 'requisition_no' in issue_df.columns:
+                duplicate_reqs = issue_df['requisition_no'].duplicated().sum()
+                if duplicate_reqs > 0:
+                    negative_issues.append(f"🟡 {duplicate_reqs} duplicate requisition numbers")
+            
+            if negative_issues:
+                for issue in negative_issues:
+                    st.markdown(f"- {issue}")
+            else:
+                st.success("✅ No major data inconsistencies detected")
+    
+    def create_timing_anomalies(self, grn_df, issue_df):
+        """Detect timing-related anomalies in transaction processing."""
+        st.subheader("⏱️ Timing Anomalies")
+        
+        # Weekend transactions
+        weekend_anomalies = []
+        
+        if not grn_df.empty:
+            date_cols = [col for col in grn_df.columns if 'date' in col.lower()]
+            for date_col in date_cols:
+                if grn_df[date_col].notna().any():
+                    grn_df[f'{date_col}_parsed'] = pd.to_datetime(grn_df[date_col], errors='coerce')
+                    weekend_grns = grn_df[grn_df[f'{date_col}_parsed'].dt.weekday >= 5]
+                    if len(weekend_grns) > 0:
+                        weekend_anomalies.append(f"🟡 {len(weekend_grns)} GRN transactions on weekends")
+        
+        if not issue_df.empty:
+            date_cols = [col for col in issue_df.columns if 'date' in col.lower()]
+            for date_col in date_cols:
+                if issue_df[date_col].notna().any():
+                    issue_df[f'{date_col}_parsed'] = pd.to_datetime(issue_df[date_col], errors='coerce')
+                    weekend_issues = issue_df[issue_df[f'{date_col}_parsed'].dt.weekday >= 5]
+                    if len(weekend_issues) > 0:
+                        weekend_anomalies.append(f"🟡 {len(weekend_issues)} Issue transactions on weekends")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📅 Weekend Activity Analysis")
+            if weekend_anomalies:
+                for anomaly in weekend_anomalies:
+                    st.markdown(f"- {anomaly}")
+            else:
+                st.success("✅ No weekend transaction anomalies detected")
+        
+        with col2:
+            st.markdown("### ⏰ Processing Time Anomalies")
+            # This would be enhanced with more sophisticated timing analysis
+            st.info("Processing time analysis available in Operational Analytics → Processing Times")
+
     def create_financial_anomalies(self, grn_df, voucher_df):
         """Detect financial anomalies and unusual spending patterns."""
         st.subheader("💸 Financial Anomalies & Unusual Spending")
@@ -1377,7 +2029,7 @@ class AdvancedStockDashboard:
                                       "<extra></extra>"
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="financial_outliers_scatter")
                     
                     # Show outlier summary
                     st.markdown("#### 🚨 Alert Summary:")
@@ -1448,7 +2100,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="price_volatility_analysis")
                         
                         # Volatility metrics
                         vol_col1, vol_col2, vol_col3 = st.columns(3)
@@ -1513,7 +2165,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="high_spending_suppliers")
                 else:
                     st.info("No suppliers with unusually high spending detected.")
             
@@ -1549,7 +2201,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="high_frequency_suppliers")
                 else:
                     st.info("No suppliers with unusually high transaction frequency detected.")
     
@@ -1602,7 +2254,7 @@ class AdvancedStockDashboard:
                             height=400
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="grn_quantity_outliers")
                         
                         # Outlier metrics
                         qty_col1, qty_col2, qty_col3 = st.columns(3)
@@ -1692,7 +2344,7 @@ class AdvancedStockDashboard:
                             barmode='overlay'
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="issue_quantity_outliers")
                         
                         # Outlier metrics
                         issue_col1, issue_col2, issue_col3 = st.columns(3)
@@ -1775,7 +2427,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="negative_stock_levels")
                         
                         st.error(f"🚨 ALERT: {len(negative_stock)} items have negative stock levels!")
                         st.dataframe(negative_stock.head(10), use_container_width=True)
@@ -1809,7 +2461,7 @@ class AdvancedStockDashboard:
                                 xaxis_tickangle=-45
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="zero_stock_high_activity")
                     else:
                         st.info("All items have positive stock levels.")
             else:
@@ -1876,7 +2528,7 @@ class AdvancedStockDashboard:
                             height=400
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="weekly_transaction_activity")
                         
                         # Weekend metrics
                         weekend_col1, weekend_col2, weekend_col3 = st.columns(3)
@@ -1952,7 +2604,7 @@ class AdvancedStockDashboard:
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="same_day_multi_supplier")
                             
                             # Activity metrics
                             activity_col1, activity_col2, activity_col3 = st.columns(3)
@@ -2035,7 +2687,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="after_hours_transactions")
                     
                     with col2:
                         # Transaction count by month
@@ -2071,7 +2723,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="bulk_transaction_pattern")
                     
                     # Summary of anomalies
                     if len(outlier_months) > 0 or len(outlier_count_months) > 0:
@@ -2117,7 +2769,7 @@ class AdvancedStockDashboard:
                         xaxis_tickangle=-45
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="rapid_successive_transactions")
             else:
                 st.info("No valid date data available for seasonal analysis")
         else:
@@ -2166,7 +2818,7 @@ class AdvancedStockDashboard:
                             xaxis_tickangle=-45
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key="multi_supplier_items")
                         
                         # Multi-supplier metrics
                         multi_col1, multi_col2, multi_col3 = st.columns(3)
@@ -2300,7 +2952,7 @@ class AdvancedStockDashboard:
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key="duplicate_transactions_analysis")
                             
                             # Ratio metrics
                             ratio_col1, ratio_col2, ratio_col3 = st.columns(3)
@@ -2385,10 +3037,640 @@ class AdvancedStockDashboard:
         - **📋 Ongoing**: Implement automated alerts for detected anomaly patterns
         """)
 
+    def create_authorization_analysis(self, voucher_df):
+        """Create comprehensive authorization analysis with SCOA integration."""
+        st.subheader("🔐 Authorization & SCOA Analysis")
+        st.markdown("*Analysis of authorization patterns, officials, and SCOA compliance*")
+        
+        if voucher_df is None or len(voucher_df) == 0:
+            st.warning("Voucher data is required for authorization analysis.")
+            return
+        
+        # Create analysis tabs
+        auth_tab1, auth_tab2, auth_tab3, auth_tab4 = st.tabs([
+            "👤 Authorization Officials",
+            "📊 SCOA Analysis", 
+            "🏗️ PPE & Electrical Materials",
+            "🔍 Authorization Patterns"
+        ])
+        
+        with auth_tab1:
+            self.analyze_authorization_officials(voucher_df)
+        
+        with auth_tab2:
+            self.analyze_scoa_structure(voucher_df)
+        
+        with auth_tab3:
+            self.analyze_ppe_electrical_materials(voucher_df)
+        
+        with auth_tab4:
+            self.analyze_authorization_patterns(voucher_df)
+
+    def analyze_authorization_officials(self, voucher_df):
+        """Analyze authorization officials and patterns."""
+        st.markdown("### 👤 Authorization Officials Analysis")
+        
+        # Check for authorization columns
+        auth_cols = ['official', 'vouch_auth_name', 'vouch_auth_user']
+        available_auth_cols = [col for col in auth_cols if col in voucher_df.columns]
+        
+        if not available_auth_cols:
+            st.warning("No authorization columns found in voucher data.")
+            return
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Official analysis
+            if 'official' in voucher_df.columns:
+                st.markdown("#### 📋 Officials Distribution")
+                
+                official_stats = voucher_df.groupby('official').agg({
+                    'voucher_no': 'count',
+                    'cheq_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                official_stats.columns = ['Transaction_Count', 'Total_Amount']
+                official_stats = official_stats.sort_values('Total_Amount', ascending=False)
+                
+                # Display metrics
+                st.metric("Unique Officials", voucher_df['official'].nunique())
+                st.metric("Total Authorizations", len(voucher_df))
+                
+                # Top officials chart
+                fig = px.bar(
+                    x=official_stats.head(10).index,
+                    y=official_stats.head(10)['Total_Amount'],
+                    title="Top 10 Officials by Authorization Value",
+                    labels={'x': 'Official', 'y': 'Total Amount (R)'}
+                )
+                fig.update_layout(xaxis_tickangle=-45)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_patterns_overview")
+                
+                # Show official stats table
+                st.markdown("**Top Officials Summary:**")
+                display_stats = official_stats.head(10).copy()
+                display_stats['Total_Amount'] = display_stats['Total_Amount'].apply(lambda x: f"R{x:,.2f}")
+                st.dataframe(display_stats, use_container_width=True)
+        
+        with col2:
+            # Vouch Auth Name analysis
+            if 'vouch_auth_name' in voucher_df.columns:
+                st.markdown("#### 🔐 Authorization Names Distribution")
+                
+                auth_name_stats = voucher_df.groupby('vouch_auth_name').agg({
+                    'voucher_no': 'count',
+                    'cheq_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                auth_name_stats.columns = ['Transaction_Count', 'Total_Amount']
+                auth_name_stats = auth_name_stats.sort_values('Total_Amount', ascending=False)
+                
+                # Display metrics
+                st.metric("Unique Auth Names", voucher_df['vouch_auth_name'].nunique())
+                
+                # Top auth names chart
+                fig = px.pie(
+                    values=auth_name_stats.head(8)['Transaction_Count'],
+                    names=auth_name_stats.head(8).index,
+                    title="Top Authorization Names (by Count)",
+                    hole=0.4
+                )
+                st.plotly_chart(fig, use_container_width=True, key="authorization_compliance_metrics")
+                
+                # Show auth name stats table
+                st.markdown("**Top Authorization Names:**")
+                display_auth = auth_name_stats.head(8).copy()
+                display_auth['Total_Amount'] = display_auth['Total_Amount'].apply(lambda x: f"R{x:,.2f}")
+                st.dataframe(display_auth, use_container_width=True)
+        
+        # Cross-reference analysis
+        if 'official' in voucher_df.columns and 'vouch_auth_name' in voucher_df.columns:
+            st.markdown("### 🔗 Official vs Authorization Name Cross-Reference")
+            
+            # Create cross-tabulation
+            cross_tab = pd.crosstab(voucher_df['official'], voucher_df['vouch_auth_name'], margins=True)
+            
+            # Show sample of cross-reference
+            st.markdown("**Authorization Cross-Reference (Sample):**")
+            sample_cross = cross_tab.head(10).iloc[:, :8]  # Show first 10 officials, first 8 auth names
+            st.dataframe(sample_cross, use_container_width=True)
+            
+            # Check for inconsistencies
+            unique_combinations = voucher_df.groupby('official')['vouch_auth_name'].nunique()
+            multiple_auth_officials = unique_combinations[unique_combinations > 1]
+            
+            if len(multiple_auth_officials) > 0:
+                st.warning(f"⚠️ {len(multiple_auth_officials)} officials have multiple authorization names - potential inconsistency")
+                st.dataframe(multiple_auth_officials.head(10), use_container_width=True)
+
+    def analyze_scoa_structure(self, voucher_df):
+        """Analyze SCOA (Standard Chart of Accounts) structure and compliance."""
+        st.markdown("### 📊 SCOA (Standard Chart of Accounts) Analysis")
+        st.info("🇿🇦 **SCOA**: South African public sector Standard Chart of Accounts with vote structure AAAABBBBBBCCCDDDDD")
+        
+        # Check for vote number column
+        vote_col = None
+        possible_vote_cols = ['vote_number', 'vote', 'vote_no', 'account', 'account_no']
+        
+        for col in possible_vote_cols:
+            if col in voucher_df.columns:
+                vote_col = col
+                break
+        
+        if not vote_col:
+            st.warning("No vote number column found. SCOA analysis requires vote number data.")
+            return
+        
+        # Parse vote numbers
+        voucher_analysis = voucher_df.copy()
+        voucher_analysis['vote_parsed'] = voucher_analysis[vote_col].apply(self.parse_vote_number)
+        
+        # Extract SCOA components
+        voucher_analysis['vote_length'] = voucher_analysis[vote_col].astype(str).str.len()
+        voucher_analysis['is_valid_scoa'] = voucher_analysis['vote_length'] >= 18  # SCOA should be 18+ digits
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 📏 Vote Number Structure Analysis")
+            
+            # Vote length distribution
+            vote_lengths = voucher_analysis['vote_length'].value_counts().sort_index()
+            
+            fig = px.bar(
+                x=vote_lengths.index,
+                y=vote_lengths.values,
+                title="Vote Number Length Distribution",
+                labels={'x': 'Vote Number Length', 'y': 'Count'}
+            )
+            st.plotly_chart(fig, use_container_width=True, key="authorization_trends_timeline")
+            
+            # SCOA compliance metrics
+            scoa_compliant = voucher_analysis['is_valid_scoa'].sum()
+            scoa_rate = (scoa_compliant / len(voucher_analysis)) * 100
+            
+            st.metric("SCOA Compliant Votes", f"{scoa_compliant:,}")
+            st.metric("SCOA Compliance Rate", f"{scoa_rate:.1f}%")
+            
+            if scoa_rate < 90:
+                st.warning(f"⚠️ Low SCOA compliance rate: {scoa_rate:.1f}%")
+        
+        with col2:
+            st.markdown("#### 🏛️ SCOA Component Analysis")
+            
+            # Parse valid SCOA votes
+            valid_scoa = voucher_analysis[voucher_analysis['is_valid_scoa']].copy()
+            
+            if len(valid_scoa) > 0:
+                # Extract SCOA components (AAAABBBBBBCCCDDDDD)
+                valid_scoa['vote_str'] = valid_scoa[vote_col].astype(str)
+                valid_scoa['department'] = valid_scoa['vote_str'].str[:4]      # AAAA - Department
+                valid_scoa['programme'] = valid_scoa['vote_str'].str[4:10]     # BBBBBB - Programme  
+                valid_scoa['sub_programme'] = valid_scoa['vote_str'].str[10:13] # CCC - Sub-programme
+                valid_scoa['economic_class'] = valid_scoa['vote_str'].str[13:18] # DDDDD - Economic classification
+                
+                # Department analysis
+                dept_analysis = valid_scoa.groupby('department').agg({
+                    'voucher_no': 'count',
+                    'cheq_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                dept_analysis.columns = ['Count', 'Amount']
+                dept_analysis = dept_analysis.sort_values('Amount', ascending=False)
+                
+                st.markdown("**Top Departments by Spending:**")
+                display_dept = dept_analysis.head(8).copy()
+                display_dept['Amount'] = display_dept['Amount'].apply(lambda x: f"R{x:,.2f}")
+                st.dataframe(display_dept, use_container_width=True)
+                
+                # Economic classification analysis
+                econ_analysis = valid_scoa.groupby('economic_class').agg({
+                    'voucher_no': 'count',
+                    'cheq_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                econ_analysis.columns = ['Count', 'Amount']
+                econ_analysis = econ_analysis.sort_values('Amount', ascending=False)
+                
+                # Show economic classification pie chart
+                fig = px.pie(
+                    values=econ_analysis.head(6)['Amount'],
+                    names=econ_analysis.head(6).index,
+                    title="Spending by Economic Classification",
+                    hole=0.4
+                )
+                st.plotly_chart(fig, use_container_width=True, key="authorization_inconsistencies")
+        
+        # SCOA compliance issues
+        st.markdown("### 🚨 SCOA Compliance Issues")
+        
+        non_compliant = voucher_analysis[~voucher_analysis['is_valid_scoa']]
+        
+        if len(non_compliant) > 0:
+            st.error(f"🚨 {len(non_compliant):,} transactions have non-compliant vote numbers")
+            
+            # Show sample non-compliant votes
+            non_compliant_sample = non_compliant.groupby(vote_col).agg({
+                'voucher_no': 'count',
+                'cheq_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+            }).round(2)
+            non_compliant_sample.columns = ['Count', 'Amount']
+            non_compliant_sample = non_compliant_sample.sort_values('Amount', ascending=False)
+            
+            st.markdown("**Non-Compliant Vote Numbers (Top Issues):**")
+            display_non_compliant = non_compliant_sample.head(10).copy()
+            display_non_compliant['Amount'] = display_non_compliant['Amount'].apply(lambda x: f"R{x:,.2f}")
+            st.dataframe(display_non_compliant, use_container_width=True)
+        else:
+            st.success("✅ All vote numbers are SCOA compliant")
+
+    def parse_vote_number(self, vote):
+        """Parse SCOA vote number structure."""
+        if pd.isna(vote):
+            return None
+        
+        vote_str = str(vote).strip()
+        
+        if len(vote_str) >= 18:
+            return {
+                'department': vote_str[:4],
+                'programme': vote_str[4:10],
+                'sub_programme': vote_str[10:13],
+                'economic_class': vote_str[13:18],
+                'full_vote': vote_str
+            }
+        
+        return {'invalid': vote_str}
+
+    def analyze_ppe_electrical_materials(self, voucher_df):
+        """Analyze PPE and electrical materials with corrected data relationships."""
+        st.markdown("### 🏗️ PPE & Electrical Materials Analysis")
+        st.info("🎯 **Focus Area**: Personal Protective Equipment (PPE) and Electrical materials for inconsistency detection")
+        
+        # Load GRN data for item details
+        grn_df = self.load_data('hr995_grn.csv')
+        
+        if grn_df is None:
+            st.warning("GRN data required for PPE/Electrical analysis.")
+            return
+        
+        # Use corrected linkage: voucher_no ← GRN voucher ← GRN items
+        grn_df['voucher_normalized'] = grn_df['voucher'].apply(lambda x: str(x).strip().upper() if pd.notna(x) else x)
+        voucher_df['voucher_no_normalized'] = voucher_df['voucher_no'].apply(lambda x: str(x).strip().upper() if pd.notna(x) else x)
+        
+        # Join vouchers with GRN items using corrected linkage
+        voucher_items = voucher_df.merge(
+            grn_df[['voucher_normalized', 'item_no', 'description', 'supplier_name', 'nett_grn_amt']],
+            left_on='voucher_no_normalized',
+            right_on='voucher_normalized',
+            how='inner'
+        )
+        
+        if len(voucher_items) == 0:
+            st.warning("No voucher-item linkages found using corrected methodology.")
+            return
+        
+        # PPE identification keywords
+        ppe_keywords = [
+            'helmet', 'hard hat', 'safety boot', 'safety shoe', 'glove', 'goggle',
+            'mask', 'respirator', 'harness', 'vest', 'hi-vis', 'high-vis',
+            'protective', 'safety', 'ppe', 'coverall', 'overall'
+        ]
+        
+        # Electrical identification keywords  
+        electrical_keywords = [
+            'cable', 'wire', 'electrical', 'switch', 'plug', 'socket', 'circuit',
+            'breaker', 'fuse', 'transformer', 'conductor', 'insulator', 'voltage',
+            'amp', 'watt', 'motor', 'generator', 'battery', 'led', 'light'
+        ]
+        
+        # Categorize items
+        voucher_items['description_lower'] = voucher_items['description'].str.lower()
+        
+        # PPE identification
+        ppe_mask = voucher_items['description_lower'].str.contains('|'.join(ppe_keywords), na=False)
+        voucher_items['is_ppe'] = ppe_mask
+        
+        # Electrical identification  
+        electrical_mask = voucher_items['description_lower'].str.contains('|'.join(electrical_keywords), na=False)
+        voucher_items['is_electrical'] = electrical_mask
+        
+        # Both categories
+        voucher_items['category'] = 'Other'
+        voucher_items.loc[voucher_items['is_ppe'], 'category'] = 'PPE'
+        voucher_items.loc[voucher_items['is_electrical'], 'category'] = 'Electrical'
+        voucher_items.loc[voucher_items['is_ppe'] & voucher_items['is_electrical'], 'category'] = 'PPE & Electrical'
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🛡️ PPE Materials Analysis")
+            
+            ppe_items = voucher_items[voucher_items['is_ppe']]
+            
+            if len(ppe_items) > 0:
+                ppe_value = pd.to_numeric(ppe_items['nett_grn_amt'], errors='coerce').sum()
+                ppe_count = len(ppe_items)
+                ppe_suppliers = ppe_items['supplier_name'].nunique()
+                
+                st.metric("PPE Transactions", f"{ppe_count:,}")
+                st.metric("PPE Value", f"R{ppe_value:,.2f}")
+                st.metric("PPE Suppliers", f"{ppe_suppliers:,}")
+                
+                # Top PPE suppliers
+                ppe_supplier_analysis = ppe_items.groupby('supplier_name').agg({
+                    'voucher_no': 'count',
+                    'nett_grn_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                ppe_supplier_analysis.columns = ['Transactions', 'Total_Value']
+                ppe_supplier_analysis = ppe_supplier_analysis.sort_values('Total_Value', ascending=False)
+                
+                fig = px.bar(
+                    x=ppe_supplier_analysis.head(8).index,
+                    y=ppe_supplier_analysis.head(8)['Total_Value'],
+                    title="Top PPE Suppliers by Value",
+                    labels={'x': 'Supplier', 'y': 'Total Value (R)'}
+                )
+                fig.update_layout(xaxis_tickangle=-45)
+                st.plotly_chart(fig, use_container_width=True, key="scoa_structure_compliance")
+                
+                # PPE inconsistency checks
+                st.markdown("**PPE Inconsistency Checks:**")
+                
+                # Check for PPE price variations
+                ppe_price_analysis = ppe_items.groupby(['item_no', 'description']).agg({
+                    'nett_grn_amt': ['count', 'mean', 'std', 'min', 'max']
+                }).round(2)
+                ppe_price_analysis.columns = ['Count', 'Mean_Price', 'Std_Price', 'Min_Price', 'Max_Price']
+                ppe_price_analysis['CV'] = (ppe_price_analysis['Std_Price'] / ppe_price_analysis['Mean_Price']) * 100
+                
+                high_variation_ppe = ppe_price_analysis[
+                    (ppe_price_analysis['Count'] >= 3) & 
+                    (ppe_price_analysis['CV'] > 30)
+                ].sort_values('CV', ascending=False)
+                
+                if len(high_variation_ppe) > 0:
+                    st.warning(f"⚠️ {len(high_variation_ppe)} PPE items show high price variation (>30% CV)")
+                    st.dataframe(high_variation_ppe.head(5), use_container_width=True)
+                else:
+                    st.success("✅ PPE pricing appears consistent")
+            else:
+                st.info("No PPE items identified in the data.")
+        
+        with col2:
+            st.markdown("#### ⚡ Electrical Materials Analysis")
+            
+            electrical_items = voucher_items[voucher_items['is_electrical']]
+            
+            if len(electrical_items) > 0:
+                electrical_value = pd.to_numeric(electrical_items['nett_grn_amt'], errors='coerce').sum()
+                electrical_count = len(electrical_items)
+                electrical_suppliers = electrical_items['supplier_name'].nunique()
+                
+                st.metric("Electrical Transactions", f"{electrical_count:,}")
+                st.metric("Electrical Value", f"R{electrical_value:,.2f}")
+                st.metric("Electrical Suppliers", f"{electrical_suppliers:,}")
+                
+                # Top electrical suppliers
+                elec_supplier_analysis = electrical_items.groupby('supplier_name').agg({
+                    'voucher_no': 'count',
+                    'nett_grn_amt': lambda x: pd.to_numeric(x, errors='coerce').sum()
+                }).round(2)
+                elec_supplier_analysis.columns = ['Transactions', 'Total_Value']
+                elec_supplier_analysis = elec_supplier_analysis.sort_values('Total_Value', ascending=False)
+                
+                fig = px.pie(
+                    values=elec_supplier_analysis.head(6)['Total_Value'],
+                    names=elec_supplier_analysis.head(6).index,
+                    title="Top Electrical Suppliers by Value",
+                    hole=0.4
+                )
+                st.plotly_chart(fig, use_container_width=True, key="vote_structure_breakdown")
+                
+                # Electrical inconsistency checks
+                st.markdown("**Electrical Inconsistency Checks:**")
+                
+                # Check for electrical supplier concentration
+                elec_total_value = elec_supplier_analysis['Total_Value'].sum()
+                top_supplier_value = elec_supplier_analysis.iloc[0]['Total_Value'] if len(elec_supplier_analysis) > 0 else 0
+                concentration_ratio = (top_supplier_value / elec_total_value * 100) if elec_total_value > 0 else 0
+                
+                if concentration_ratio > 70:
+                    st.warning(f"⚠️ High supplier concentration: Top supplier has {concentration_ratio:.1f}% of electrical spending")
+                else:
+                    st.success(f"✅ Supplier concentration acceptable: {concentration_ratio:.1f}%")
+                
+                # Check for electrical item frequency
+                elec_item_freq = electrical_items['item_no'].value_counts()
+                high_freq_items = elec_item_freq[elec_item_freq > 10]
+                
+                if len(high_freq_items) > 0:
+                    st.info(f"📊 {len(high_freq_items)} electrical items appear frequently (>10 transactions)")
+                    st.dataframe(high_freq_items.head(5), use_container_width=True)
+            else:
+                st.info("No electrical items identified in the data.")
+        
+        # Combined analysis
+        st.markdown("### 🔍 Combined PPE & Electrical Insights")
+        
+        category_summary = voucher_items.groupby('category').agg({
+            'voucher_no': 'count',
+            'nett_grn_amt': lambda x: pd.to_numeric(x, errors='coerce').sum(),
+            'supplier_name': 'nunique'
+        }).round(2)
+        category_summary.columns = ['Transactions', 'Total_Value', 'Unique_Suppliers']
+        
+        # Category breakdown chart
+        fig = px.bar(
+            x=category_summary.index,
+            y=category_summary['Total_Value'],
+            title="Spending by Material Category",
+            labels={'x': 'Category', 'y': 'Total Value (R)'}
+        )
+        st.plotly_chart(fig, use_container_width=True, key="scoa_validation_summary")
+        
+        # Summary table
+        st.markdown("**Category Summary:**")
+        display_summary = category_summary.copy()
+        display_summary['Total_Value'] = display_summary['Total_Value'].apply(lambda x: f"R{x:,.2f}")
+        st.dataframe(display_summary, use_container_width=True)
+
+    def analyze_authorization_patterns(self, voucher_df):
+        """Analyze authorization patterns and identify potential inconsistencies."""
+        st.markdown("### 🔍 Authorization Pattern Analysis")
+        st.info("🎯 **Focus**: Identifying inconsistencies in authorization patterns, officials, and approval workflows")
+        
+        if 'official' not in voucher_df.columns or 'vouch_auth_name' not in voucher_df.columns:
+            st.warning("Authorization analysis requires 'official' and 'vouch_auth_name' columns.")
+            return
+        
+        # Prepare data for analysis
+        auth_analysis = voucher_df.copy()
+        auth_analysis['cheq_amt_numeric'] = pd.to_numeric(auth_analysis['cheq_amt'], errors='coerce')
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 💰 Authorization by Amount Ranges")
+            
+            # Define amount ranges for authorization analysis
+            amount_ranges = [
+                (0, 1000, "R0 - R1,000"),
+                (1000, 10000, "R1,000 - R10,000"),
+                (10000, 50000, "R10,000 - R50,000"),
+                (50000, 100000, "R50,000 - R100,000"),
+                (100000, 500000, "R100,000 - R500,000"),
+                (500000, float('inf'), "R500,000+")
+            ]
+            
+            # Categorize by amount ranges
+            auth_analysis['amount_range'] = 'Unknown'
+            for min_amt, max_amt, label in amount_ranges:
+                mask = (auth_analysis['cheq_amt_numeric'] >= min_amt) & (auth_analysis['cheq_amt_numeric'] < max_amt)
+                auth_analysis.loc[mask, 'amount_range'] = label
+            
+            # Authorization by amount range
+            range_auth = auth_analysis.groupby(['amount_range', 'official']).size().reset_index(name='count')
+            range_summary = auth_analysis.groupby('amount_range').agg({
+                'voucher_no': 'count',
+                'official': 'nunique',
+                'cheq_amt_numeric': 'sum'
+            }).round(2)
+            range_summary.columns = ['Transactions', 'Unique_Officials', 'Total_Amount']
+            
+            fig = px.bar(
+                x=range_summary.index,
+                y=range_summary['Unique_Officials'],
+                title="Officials by Authorization Amount Range",
+                labels={'x': 'Amount Range', 'y': 'Number of Officials'}
+            )
+            fig.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True, key="ppe_category_distribution")
+            
+            st.markdown("**Authorization Range Summary:**")
+            display_range = range_summary.copy()
+            display_range['Total_Amount'] = display_range['Total_Amount'].apply(lambda x: f"R{x:,.2f}")
+            st.dataframe(display_range, use_container_width=True)
+        
+        with col2:
+            st.markdown("#### 📊 Official Authorization Frequency")
+            
+            # Official frequency analysis
+            official_freq = auth_analysis.groupby('official').agg({
+                'voucher_no': 'count',
+                'cheq_amt_numeric': ['sum', 'mean', 'std']
+            }).round(2)
+            official_freq.columns = ['Transaction_Count', 'Total_Amount', 'Mean_Amount', 'Std_Amount']
+            official_freq['CV'] = (official_freq['Std_Amount'] / official_freq['Mean_Amount']) * 100
+            official_freq = official_freq.sort_values('Transaction_Count', ascending=False)
+            
+            # High-frequency officials
+            high_freq_threshold = official_freq['Transaction_Count'].quantile(0.8)
+            high_freq_officials = official_freq[official_freq['Transaction_Count'] > high_freq_threshold]
+            
+            fig = px.scatter(
+                official_freq,
+                x='Transaction_Count',
+                y='Mean_Amount',
+                hover_name=official_freq.index,
+                title="Official Authorization Patterns",
+                labels={'Transaction_Count': 'Transaction Count', 'Mean_Amount': 'Mean Authorization Amount (R)'},
+                size='Total_Amount',
+                color='CV'
+            )
+            st.plotly_chart(fig, use_container_width=True, key="electrical_materials_breakdown")
+            
+            if len(high_freq_officials) > 0:
+                st.warning(f"⚠️ {len(high_freq_officials)} officials have high authorization frequency")
+                st.dataframe(high_freq_officials.head(5), use_container_width=True)
+        
+        # Inconsistency detection
+        st.markdown("### 🚨 Authorization Inconsistency Detection")
+        
+        inconsistency_findings = []
+        
+        # 1. Officials with highly variable authorization amounts
+        variable_officials = official_freq[official_freq['CV'] > 200]  # CV > 200%
+        if len(variable_officials) > 0:
+            inconsistency_findings.append({
+                'Type': 'High Amount Variability',
+                'Count': len(variable_officials),
+                'Description': f'{len(variable_officials)} officials show high variability in authorization amounts (CV > 200%)',
+                'Severity': 'Medium'
+            })
+        
+        # 2. Multiple authorization names per official
+        official_auth_names = auth_analysis.groupby('official')['vouch_auth_name'].nunique()
+        multiple_auth_officials = official_auth_names[official_auth_names > 1]
+        if len(multiple_auth_officials) > 0:
+            inconsistency_findings.append({
+                'Type': 'Multiple Auth Names',
+                'Count': len(multiple_auth_officials),
+                'Description': f'{len(multiple_auth_officials)} officials have multiple authorization names',
+                'Severity': 'High'
+            })
+        
+        # 3. Unusual authorization patterns by date
+        if 'date' in auth_analysis.columns:
+            auth_analysis['date_parsed'] = pd.to_datetime(auth_analysis['date'], errors='coerce')
+            auth_analysis['hour'] = auth_analysis['date_parsed'].dt.hour
+            auth_analysis['day_of_week'] = auth_analysis['date_parsed'].dt.dayofweek
+            
+            # Weekend authorizations
+            weekend_auths = auth_analysis[auth_analysis['day_of_week'] >= 5]
+            if len(weekend_auths) > 0:
+                inconsistency_findings.append({
+                    'Type': 'Weekend Authorizations',
+                    'Count': len(weekend_auths),
+                    'Description': f'{len(weekend_auths)} authorizations occurred on weekends',
+                    'Severity': 'Low'
+                })
+        
+        # 4. High-value single authorizations
+        high_value_threshold = auth_analysis['cheq_amt_numeric'].quantile(0.95)
+        high_value_auths = auth_analysis[auth_analysis['cheq_amt_numeric'] > high_value_threshold]
+        if len(high_value_auths) > 0:
+            inconsistency_findings.append({
+                'Type': 'High-Value Authorizations',
+                'Count': len(high_value_auths),
+                'Description': f'{len(high_value_auths)} authorizations exceed 95th percentile (R{high_value_threshold:,.2f})',
+                'Severity': 'Medium'
+            })
+        
+        # Display inconsistency findings
+        if inconsistency_findings:
+            findings_df = pd.DataFrame(inconsistency_findings)
+            
+            # Color code by severity
+            def highlight_severity(row):
+                if row['Severity'] == 'High':
+                    return ['background-color: #ffebee'] * len(row)
+                elif row['Severity'] == 'Medium':
+                    return ['background-color: #fff3e0'] * len(row)
+                else:
+                    return ['background-color: #e8f5e8'] * len(row)
+            
+            styled_findings = findings_df.style.apply(highlight_severity, axis=1)
+            st.dataframe(styled_findings, use_container_width=True, hide_index=True)
+        else:
+            st.success("✅ No major authorization inconsistencies detected")
+        
+        # Recommendations
+        st.markdown("### 💡 Authorization Recommendations")
+        
+        recommendations = [
+            "🔍 **Review High Variability**: Investigate officials with high authorization amount variability",
+            "📊 **Standardize Auth Names**: Ensure consistent authorization naming conventions",
+            "⏰ **Monitor Weekend Activity**: Review weekend authorizations for policy compliance",
+            "💰 **High-Value Controls**: Implement additional controls for high-value authorizations",
+            "📋 **Regular Audits**: Conduct monthly authorization pattern reviews",
+            "🔐 **Access Controls**: Review authorization limits and delegation of authority"
+        ]
+        
+        for rec in recommendations:
+            st.markdown(f"- {rec}")
+
     def create_grn_transaction_analysis(self, grn_df, voucher_df):
-        """Comprehensive GRN vs Transaction analysis to identify payment anomalies."""
-        st.subheader("🔗 GRN-Transaction Comparison Analysis")
-        st.markdown("*Identify payment discrepancies, multiple payments, and supplier linking issues*")
+        """Comprehensive GRN vs Transaction analysis with corrected PDF linkage."""
+        st.subheader("🔗 GRN-Transaction Analysis (Corrected)")
+        st.markdown("*Using corrected PDF → GRN → Voucher linkage methodology*")
         
         if len(grn_df) == 0 or len(voucher_df) == 0:
             st.warning("Both GRN and voucher data are required for this analysis.")
@@ -2489,7 +3771,7 @@ class AdvancedStockDashboard:
                             title="Unpaid GRN Value by PDF Linkage",
                             color='Category',
                             color_discrete_map={'PDF-Linked Unpaid': '#ff7f7f', 'Non-PDF Unpaid': '#ffb366'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="ppe_electrical_trends")
         
         # Payment timing analysis
         st.markdown("### ⏰ Payment Timing Analysis")
@@ -2544,7 +3826,7 @@ class AdvancedStockDashboard:
                     fig = px.bar(delay_df, x='Range', y='Count',
                                 title="Payment Delay Distribution",
                                 color='Range')
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="supplier_ppe_specialization")
                     
             except Exception as e:
                 st.warning(f"Could not analyze payment timing: {str(e)}")
@@ -2698,7 +3980,7 @@ class AdvancedStockDashboard:
                 
                 fig = px.pie(payment_breakdown, values='Value', names='Type',
                             title="Payment Value Distribution by PDF Linkage")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="materials_seasonal_patterns")
             
             # Supplier payment frequency analysis
             st.markdown("#### 🏢 Supplier Payment Frequency")
@@ -3008,7 +4290,7 @@ class AdvancedStockDashboard:
             
             fig = px.pie(linkage_data, values='Value', names='Type', 
                          title="GRN Value Distribution by PDF Linkage")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="enhanced_anomaly_detection")
         
         # Voucher Validation Analysis
         st.markdown("### ✅ Voucher Validation Analysis")
@@ -3206,7 +4488,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_official_patterns")
         
         with col2:
             # Monthly transaction volume
@@ -3237,7 +4519,7 @@ class AdvancedStockDashboard:
                     xaxis_tickangle=-45
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_value_analysis")
         
         # Top suppliers analysis
         if 'supplier_name' in hr185_df.columns and 'amount' in hr185_df.columns:
@@ -3270,7 +4552,7 @@ class AdvancedStockDashboard:
                 xaxis_tickangle=-45
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="authorization_monthly_trends")
             
             # Show data table
             st.markdown("#### 📊 Detailed Supplier Breakdown")
@@ -3335,7 +4617,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_threshold_analysis")
         
         with col2:
             # Document types
@@ -3360,7 +4642,7 @@ class AdvancedStockDashboard:
                     height=400
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="multi_official_authorizations")
         
         # Reference analysis
         if 'reference' in hr990_df.columns and 'count' in hr990_df.columns:
@@ -3388,7 +4670,7 @@ class AdvancedStockDashboard:
                 xaxis_tickangle=-45
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="authorization_processing_time")
     
     def create_combined_pdf_analytics(self, hr185_df, hr990_df):
         """Create combined analytics for both PDF data sources."""
@@ -3486,7 +4768,7 @@ class AdvancedStockDashboard:
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key="authorization_risk_assessment")
         
         # Recommendations
         st.markdown("### 💡 PDF Data Insights & Recommendations")
@@ -3856,7 +5138,7 @@ class AdvancedStockDashboard:
                     title="Invalid Vouchers by PDF Linkage",
                     color_discrete_sequence=['#ff9999', '#66b3ff']
                 )
-                st.plotly_chart(fig_pdf, use_container_width=True)
+                st.plotly_chart(fig_pdf, use_container_width=True, key="pdf_document_patterns")
             
             with col2:
                 # Value breakdown
@@ -3867,7 +5149,7 @@ class AdvancedStockDashboard:
                     color=pdf_summary['Total_Value_R'],
                     color_continuous_scale='Reds'
                 )
-                st.plotly_chart(fig_value, use_container_width=True)
+                st.plotly_chart(fig_value, use_container_width=True, key="pdf_value_correlation")
             
             # Insights for corrected analysis
             st.info("""
@@ -3897,7 +5179,7 @@ class AdvancedStockDashboard:
                 names=reason_summary.index,
                 title="Invalid Voucher References by Reason"
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, key="pdf_type_distribution")
         
         # Explanation of reasons
         st.subheader("🔍 Explanation of Invalid Reasons")
@@ -3956,7 +5238,7 @@ class AdvancedStockDashboard:
                     title="Invalid Voucher Value by Prefix",
                     labels={'x': 'Voucher Prefix', 'y': 'Total Value (R)'}
                 )
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, use_container_width=True, key="pdf_monthly_processing")
         
         # Date analysis
         st.subheader("📅 Date Analysis")
@@ -3980,7 +5262,7 @@ class AdvancedStockDashboard:
                     title="Invalid Voucher References Over Time",
                     labels={'x': 'Month', 'y': 'Total Value (R)'}
                 )
-                st.plotly_chart(fig_time, use_container_width=True)
+                st.plotly_chart(fig_time, use_container_width=True, key="pdf_processing_timeline")
         
         # Top invalid vouchers by value
         st.subheader("💰 Top Invalid Vouchers by Value")
