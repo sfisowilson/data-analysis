@@ -929,10 +929,11 @@ class AdvancedStockDashboard:
                 
                 # Top moving items
                 top_items = movement_df.groupby('item_id')['total_quantity'].sum().sort_values(ascending=False).head(20)
+                top_items_df = pd.DataFrame({'item_id': top_items.index, 'total_quantity': top_items.values})
                 
-                fig1 = px.bar(x=top_items.values, y=top_items.index,
+                fig1 = px.bar(top_items_df, x='total_quantity', y='item_id',
                              title='Top 20 Items by Total Movement',
-                             labels={'x': 'Total Quantity', 'y': 'Item ID'},
+                             labels={'total_quantity': 'Total Quantity', 'item_id': 'Item ID'},
                              orientation='h')
                 fig1.update_layout(
                     height=600,
@@ -1048,8 +1049,9 @@ class AdvancedStockDashboard:
             # Show stock adjustments summary
             if 'source_file' in stock_df.columns:
                 adjustment_summary = stock_df['source_file'].value_counts()
+                adjustment_df = pd.DataFrame({'source_file': adjustment_summary.index, 'count': adjustment_summary.values})
                 
-                fig = px.bar(x=adjustment_summary.values, y=adjustment_summary.index,
+                fig = px.bar(adjustment_df, x='count', y='source_file',
                            title='Stock Adjustments by Source',
                            orientation='h')
                 st.plotly_chart(fig, width="stretch", key="stock_adjustments_by_source")
@@ -1143,8 +1145,9 @@ class AdvancedStockDashboard:
             # Show supplier data summary
             if 'source_file' in suppliers_df.columns:
                 supplier_sources = suppliers_df['source_file'].value_counts()
+                supplier_sources_df = pd.DataFrame({'source_file': supplier_sources.index, 'count': supplier_sources.values})
                 
-                fig = px.pie(values=supplier_sources.values, names=supplier_sources.index,
+                fig = px.pie(supplier_sources_df, values='count', names='source_file',
                            title='Supplier Data Sources')
                 fig.update_layout(
                     annotations=[
