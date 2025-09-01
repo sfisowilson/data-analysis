@@ -1692,21 +1692,10 @@ class AdvancedStockDashboard:
         
         with anomaly_tab1:
             self.create_financial_anomalies(grn_df, voucher_df)
+            self.create_volume_anomalies(grn_df, issue_df)
         
         with anomaly_tab2:
             self.create_relationship_anomalies(linked_data)
-        
-        with anomaly_tab3:
-            self.create_data_quality_anomalies(grn_df, issue_df)
-        
-        with anomaly_tab4:
-            self.create_timing_anomalies(grn_df, issue_df)
-        
-        with anomaly_tab5:
-            self.create_pattern_anomalies(grn_df, issue_df, hr390_df)
-        
-        with anomaly_tab2:
-            self.create_volume_anomalies(grn_df, issue_df)
         
         with anomaly_tab3:
             self.create_data_quality_anomalies(grn_df, issue_df)
