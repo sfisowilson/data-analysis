@@ -3574,11 +3574,12 @@ class AdvancedStockDashboard:
             high_freq_officials = official_freq[official_freq['Transaction_Count'] > high_freq_threshold]
             
             fig = px.scatter(
-                x=official_freq['Transaction_Count'],
-                y=official_freq['Mean_Amount'],
+                official_freq,
+                x='Transaction_Count',
+                y='Mean_Amount',
                 hover_name=official_freq.index,
                 title="Official Authorization Patterns",
-                labels={'x': 'Transaction Count', 'y': 'Mean Authorization Amount (R)'},
+                labels={'Transaction_Count': 'Transaction Count', 'Mean_Amount': 'Mean Authorization Amount (R)'},
                 size='Total_Amount',
                 color='CV'
             )
