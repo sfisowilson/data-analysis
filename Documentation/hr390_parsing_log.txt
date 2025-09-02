@@ -1,0 +1,77 @@
+2025-08-31 20:01:13,216 - INFO - Found 3 HR390 PDF files to process
+2025-08-31 20:01:13,217 - INFO - Processing: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:01:13,217 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:01:39,462 - INFO - Saved item movements: 550 items
+2025-08-31 20:01:39,492 - INFO - Saved transactions: 5610 transactions
+2025-08-31 20:01:39,497 - INFO - Saved reconciliation: 550 items
+2025-08-31 20:01:39,500 - INFO - Saved inventory summary
+2025-08-31 20:01:39,501 - INFO - Saved transaction summary
+2025-08-31 20:01:39,502 - INFO - Saved report info
+2025-08-31 20:01:39,503 - INFO - Processing: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:01:39,504 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:02:05,500 - INFO - Saved item movements: 598 items
+2025-08-31 20:02:05,527 - INFO - Saved transactions: 5361 transactions
+2025-08-31 20:02:05,532 - INFO - Saved reconciliation: 598 items
+2025-08-31 20:02:05,535 - INFO - Saved inventory summary
+2025-08-31 20:02:05,537 - INFO - Saved transaction summary
+2025-08-31 20:02:05,538 - INFO - Saved report info
+2025-08-31 20:02:05,541 - INFO - Processing: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:02:05,542 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:02:30,121 - INFO - Saved item movements: 449 items
+2025-08-31 20:02:30,148 - INFO - Saved transactions: 4987 transactions
+2025-08-31 20:02:30,152 - INFO - Saved reconciliation: 449 items
+2025-08-31 20:02:30,155 - INFO - Saved inventory summary
+2025-08-31 20:02:30,156 - INFO - Saved transaction summary
+2025-08-31 20:02:30,157 - INFO - Saved report info
+2025-08-31 20:23:01,819 - INFO - Loaded HR995issue data: 20487 records
+2025-08-31 20:23:01,820 - INFO - Found 3 HR390 PDF files to process
+2025-08-31 20:23:01,821 - INFO - Processing: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:23:01,821 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:23:34,052 - INFO - Saved item movements: 550 items
+2025-08-31 20:23:34,112 - INFO - Saved transactions: 5610 transactions
+2025-08-31 20:23:34,119 - INFO - Saved reconciliation: 550 items
+2025-08-31 20:23:34,122 - INFO - Saved inventory summary
+2025-08-31 20:23:34,123 - INFO - Saved transaction summary
+2025-08-31 20:23:34,125 - INFO - Saved report info
+2025-08-31 20:23:34,129 - INFO - Processing: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:23:34,130 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:24:10,432 - INFO - Saved item movements: 598 items
+2025-08-31 20:24:10,499 - INFO - Saved transactions: 5361 transactions
+2025-08-31 20:24:10,508 - INFO - Saved reconciliation: 598 items
+2025-08-31 20:24:10,511 - INFO - Saved inventory summary
+2025-08-31 20:24:10,515 - INFO - Saved transaction summary
+2025-08-31 20:24:10,519 - INFO - Saved report info
+2025-08-31 20:24:10,524 - INFO - Processing: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:24:10,525 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:24:43,826 - INFO - Saved item movements: 449 items
+2025-08-31 20:24:43,881 - INFO - Saved transactions: 4987 transactions
+2025-08-31 20:24:43,887 - INFO - Saved reconciliation: 449 items
+2025-08-31 20:24:43,889 - INFO - Saved inventory summary
+2025-08-31 20:24:43,890 - INFO - Saved transaction summary
+2025-08-31 20:24:43,892 - INFO - Saved report info
+2025-08-31 20:28:26,743 - INFO - Loaded HR995issue data: 20487 records
+2025-08-31 20:28:26,744 - INFO - Found 3 HR390 PDF files to process
+2025-08-31 20:28:26,744 - INFO - Processing: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:28:26,744 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 20:28:58,673 - INFO - Saved item movements: 550 items
+2025-08-31 20:28:58,714 - INFO - Saved transactions: 5610 transactions
+2025-08-31 20:28:58,718 - INFO - Saved reconciliation: 550 items
+2025-08-31 20:28:58,719 - INFO - Saved inventory summary
+2025-08-31 20:28:58,722 - INFO - Saved transaction summary
+2025-08-31 20:28:58,723 - INFO - Saved report info
+2025-08-31 20:28:58,727 - INFO - Processing: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:28:58,727 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 20:29:32,514 - INFO - Saved item movements: 598 items
+2025-08-31 20:29:32,556 - INFO - Saved transactions: 5361 transactions
+2025-08-31 20:29:32,562 - INFO - Saved reconciliation: 598 items
+2025-08-31 20:29:32,564 - INFO - Saved inventory summary
+2025-08-31 20:29:32,564 - INFO - Saved transaction summary
+2025-08-31 20:29:32,565 - INFO - Saved report info
+2025-08-31 20:29:32,567 - INFO - Processing: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:29:32,567 - INFO - Parsing HR390 PDF: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 20:30:05,008 - INFO - Saved item movements: 449 items
+2025-08-31 20:30:05,049 - INFO - Saved transactions: 4987 transactions
+2025-08-31 20:30:05,053 - INFO - Saved reconciliation: 449 items
+2025-08-31 20:30:05,055 - INFO - Saved inventory summary
+2025-08-31 20:30:05,057 - INFO - Saved transaction summary
+2025-08-31 20:30:05,059 - INFO - Saved report info

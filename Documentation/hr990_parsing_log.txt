@@ -1,0 +1,529 @@
+2025-08-31 19:49:22,483 - INFO - Loaded HR995vouch data: 28697 records
+2025-08-31 19:49:22,484 - INFO - Found 3 HR990 PDF files to process
+2025-08-31 19:49:22,485 - INFO - Processing: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:49:22,485 - INFO - Parsing HR990 PDF: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:49:34,645 - INFO - Found section: 1. Suppliers
+2025-08-31 19:49:34,645 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:49:34,646 - INFO - Found section: Total Count of Supplier Additions 240
+2025-08-31 19:49:34,646 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:49:34,646 - INFO - Found section: Total Count of Supplier/Field Amendments 181 294
+2025-08-31 19:49:34,647 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:49:34,647 - INFO - Found section: Total Count of Suppliers Deleted 0
+2025-08-31 19:49:34,647 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:49:34,648 - INFO - Found section: Total Count of Active Suppliers 7891
+2025-08-31 19:49:34,648 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:49:34,648 - INFO - Found section: Total Count of Inactive Suppliers 131
+2025-08-31 19:49:34,649 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:49:34,649 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:49:34,649 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:49:34,649 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:49:34,650 - INFO - Found section: 2. Orders
+2025-08-31 19:49:34,652 - INFO - Found section: Total Count and Amt of Orders Processed 3142 424579409.16
+2025-08-31 19:49:34,652 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:49:34,652 - INFO - Found section: Total Count of Order Transactions Processed 3860
+2025-08-31 19:49:34,657 - ERROR - Error parsing 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf: list indices must be integers or slices, not str
+2025-08-31 19:49:34,657 - INFO - Processing: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:49:34,657 - INFO - Parsing HR990 PDF: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:49:46,462 - INFO - Found section: 1. Suppliers
+2025-08-31 19:49:46,462 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:49:46,463 - INFO - Found section: Total Count of Supplier Additions 220
+2025-08-31 19:49:46,463 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:49:46,463 - INFO - Found section: Total Count of Supplier/Field Amendments 130 216
+2025-08-31 19:49:46,463 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:49:46,464 - INFO - Found section: Total Count of Suppliers Deleted 1
+2025-08-31 19:49:46,464 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:49:46,464 - INFO - Found section: Total Count of Active Suppliers 8094
+2025-08-31 19:49:46,465 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:49:46,465 - INFO - Found section: Total Count of Inactive Suppliers 140
+2025-08-31 19:49:46,465 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:49:46,465 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:49:46,466 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:49:46,466 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:49:46,466 - INFO - Found section: 2. Orders
+2025-08-31 19:49:46,468 - INFO - Found section: Total Count and Amt of Orders Processed 2526 383878595.69
+2025-08-31 19:49:46,468 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:49:46,468 - INFO - Found section: Total Count of Order Transactions Processed 3091
+2025-08-31 19:49:46,471 - ERROR - Error parsing 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf: list indices must be integers or slices, not str
+2025-08-31 19:49:46,472 - INFO - Processing: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:49:46,472 - INFO - Parsing HR990 PDF: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:49:58,448 - INFO - Found section: 1. Suppliers
+2025-08-31 19:49:58,449 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:49:58,449 - INFO - Found section: Total Count of Supplier Additions 375
+2025-08-31 19:49:58,449 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:49:58,450 - INFO - Found section: Total Count of Supplier/Field Amendments 162 263
+2025-08-31 19:49:58,450 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:49:58,450 - INFO - Found section: Total Count of Suppliers Deleted 0
+2025-08-31 19:49:58,450 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:49:58,451 - INFO - Found section: Total Count of Active Suppliers 8425
+2025-08-31 19:49:58,451 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:49:58,451 - INFO - Found section: Total Count of Inactive Suppliers 173
+2025-08-31 19:49:58,452 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:49:58,452 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:49:58,452 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:49:58,452 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:49:58,452 - INFO - Found section: 2. Orders
+2025-08-31 19:49:58,454 - INFO - Found section: Total Count and Amt of Orders Processed 2152 357748340.34
+2025-08-31 19:49:58,455 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:49:58,455 - INFO - Found section: Total Count of Order Transactions Processed 2697
+2025-08-31 19:49:58,458 - ERROR - Error parsing 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf: list indices must be integers or slices, not str
+2025-08-31 19:51:27,549 - INFO - Loaded HR995vouch data: 28697 records
+2025-08-31 19:51:27,550 - INFO - Found 3 HR990 PDF files to process
+2025-08-31 19:51:27,550 - INFO - Processing: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:51:27,550 - INFO - Parsing HR990 PDF: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:51:39,721 - INFO - Found section: 1. Suppliers
+2025-08-31 19:51:39,722 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:51:39,722 - INFO - Found section: Total Count of Supplier Additions 240
+2025-08-31 19:51:39,723 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:51:39,723 - INFO - Found section: Total Count of Supplier/Field Amendments 181 294
+2025-08-31 19:51:39,723 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:51:39,723 - INFO - Found section: Total Count of Suppliers Deleted 0
+2025-08-31 19:51:39,723 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:51:39,724 - INFO - Found section: Total Count of Active Suppliers 7891
+2025-08-31 19:51:39,724 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:51:39,724 - INFO - Found section: Total Count of Inactive Suppliers 131
+2025-08-31 19:51:39,725 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:51:39,725 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:51:39,725 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:51:39,725 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:51:39,726 - INFO - Found section: 2. Orders
+2025-08-31 19:51:39,728 - INFO - Found section: Total Count and Amt of Orders Processed 3142 424579409.16
+2025-08-31 19:51:39,728 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:51:39,728 - INFO - Found section: Total Count of Order Transactions Processed 3860
+2025-08-31 19:51:39,730 - ERROR - Error merging section data for 'Total Count of Order Transactions Processed 3860': list indices must be integers or slices, not str
+2025-08-31 19:51:39,731 - INFO - Found section: Total Count and Amt of Orders Authorised 3121 423608049.15
+2025-08-31 19:51:39,731 - INFO - Found section: Count of Order Transactions Authorised
+2025-08-31 19:51:39,731 - INFO - Found section: Total Count of Order Transactions Authorised 3826
+2025-08-31 19:51:39,732 - ERROR - Error merging section data for 'Total Count of Order Transactions Authorised 3826': list indices must be integers or slices, not str
+2025-08-31 19:51:39,732 - INFO - Found section: Total Count and Amt of Orders Cancelled 100 20434387.86
+2025-08-31 19:51:39,732 - INFO - Found section: Count of Order Transactions Cancelled
+2025-08-31 19:51:39,732 - INFO - Found section: Total Count of Order Transactions Cancelled 120
+2025-08-31 19:51:39,733 - ERROR - Error merging section data for 'Total Count of Order Transactions Cancelled 120': list indices must be integers or slices, not str
+2025-08-31 19:51:39,733 - INFO - Found section: Total Count and Amt of Orders Unauthorised 154 350136936.34
+2025-08-31 19:51:39,733 - INFO - Found section: 3. Goods Received Notes
+2025-08-31 19:51:39,733 - INFO - Found section: Count of GRNs Processed
+2025-08-31 19:51:39,736 - INFO - Found section: Total Count of GRNs Processed 2813
+2025-08-31 19:51:39,736 - INFO - Found section: Count of GRN Transactions Processed
+2025-08-31 19:51:39,736 - INFO - Found section: Total Count of GRN Transactions Processed 3392
+2025-08-31 19:51:39,737 - INFO - Found section: Count of GRNs Authorised
+2025-08-31 19:51:39,740 - INFO - Found section: Total Count of GRNs Authorised 2812
+2025-08-31 19:51:39,741 - INFO - Found section: Count of GRN Transactions Authorised
+2025-08-31 19:51:39,741 - INFO - Found section: Total Count of GRN Transactions Authorised 3391
+2025-08-31 19:51:39,741 - INFO - Found section: Count of GRNs Invoiced
+2025-08-31 19:51:39,744 - INFO - Found section: Total Count of GRNs Invoiced 2812
+2025-08-31 19:51:39,744 - INFO - Found section: 4. Invoices
+2025-08-31 19:51:39,744 - INFO - Found section: Count of Invoices Processed
+2025-08-31 19:51:39,745 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:51:39,745 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,745 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:39,745 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:39,746 - INFO - Found section: Total Credit Note Payments 15
+2025-08-31 19:51:39,747 - ERROR - Error merging section data for 'Total Credit Note Payments 15': list indices must be integers or slices, not str
+2025-08-31 19:51:39,747 - INFO - Found section: Total Sundry Payments 1763
+2025-08-31 19:51:39,749 - ERROR - Error merging section data for 'Total Sundry Payments 1763': list indices must be integers or slices, not str
+2025-08-31 19:51:39,750 - INFO - Found section: Total Standing Payments 4153
+2025-08-31 19:51:39,750 - ERROR - Error merging section data for 'Total Standing Payments 4153': list indices must be integers or slices, not str
+2025-08-31 19:51:39,750 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:39,750 - INFO - Found section: Count of Invoices Authorised
+2025-08-31 19:51:39,750 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:51:39,751 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,751 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:39,751 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:39,751 - INFO - Found section: Total Credit Note Payments 15
+2025-08-31 19:51:39,753 - ERROR - Error merging section data for 'Total Credit Note Payments 15': list indices must be integers or slices, not str
+2025-08-31 19:51:39,753 - INFO - Found section: Total Sundry Payments 1754
+2025-08-31 19:51:39,755 - ERROR - Error merging section data for 'Total Sundry Payments 1754': list indices must be integers or slices, not str
+2025-08-31 19:51:39,755 - INFO - Found section: Total Standing Payments 4153
+2025-08-31 19:51:39,756 - ERROR - Error merging section data for 'Total Standing Payments 4153': list indices must be integers or slices, not str
+2025-08-31 19:51:39,756 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:39,756 - ERROR - Error merging section data for 'Total Civil Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,756 - INFO - Found section: Count of Transactions Processed
+2025-08-31 19:51:39,756 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:51:39,756 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,756 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:39,756 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:39,757 - INFO - Found section: Total Credit Note Payments 15
+2025-08-31 19:51:39,757 - ERROR - Error merging section data for 'Total Credit Note Payments 15': list indices must be integers or slices, not str
+2025-08-31 19:51:39,757 - INFO - Found section: Total Sundry Payments 2528
+2025-08-31 19:51:39,758 - ERROR - Error merging section data for 'Total Sundry Payments 2528': list indices must be integers or slices, not str
+2025-08-31 19:51:39,758 - INFO - Found section: Total Standing Payments 4153
+2025-08-31 19:51:39,758 - ERROR - Error merging section data for 'Total Standing Payments 4153': list indices must be integers or slices, not str
+2025-08-31 19:51:39,758 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:39,758 - INFO - Found section: Count of Transactions Authorised
+2025-08-31 19:51:39,759 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:51:39,759 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,759 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:39,759 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:39,759 - INFO - Found section: Total Credit Note Payments 15
+2025-08-31 19:51:39,759 - ERROR - Error merging section data for 'Total Credit Note Payments 15': list indices must be integers or slices, not str
+2025-08-31 19:51:39,759 - INFO - Found section: Total Sundry Payments 2486
+2025-08-31 19:51:39,760 - ERROR - Error merging section data for 'Total Sundry Payments 2486': list indices must be integers or slices, not str
+2025-08-31 19:51:39,760 - INFO - Found section: Total Standing Payments 4153
+2025-08-31 19:51:39,760 - ERROR - Error merging section data for 'Total Standing Payments 4153': list indices must be integers or slices, not str
+2025-08-31 19:51:39,760 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:39,761 - INFO - Found section: 5. Cheques
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Creditor Payments 7870
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:39,761 - INFO - Found section: Total Count of Cheques Presented 7870
+2025-08-31 19:51:39,761 - ERROR - Error merging section data for 'Total Count of Cheques Presented 7870': list indices must be integers or slices, not str
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Creditor Payments 4
+2025-08-31 19:51:39,761 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Total Count of Cheques Cancelled 4
+2025-08-31 19:51:39,762 - ERROR - Error merging section data for 'Total Count of Cheques Cancelled 4': list indices must be integers or slices, not str
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:39,762 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:39,763 - INFO - Found section: Total Count of Cheques Re-Issued 0
+2025-08-31 19:51:39,763 - ERROR - Error merging section data for 'Total Count of Cheques Re-Issued 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,763 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:39,763 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:39,763 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:39,763 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:39,763 - INFO - Found section: Total Count of Cheques Stale 0
+2025-08-31 19:51:39,763 - ERROR - Error merging section data for 'Total Count of Cheques Stale 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,763 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:39,764 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:39,764 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:39,764 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:39,764 - INFO - Found section: Total Count of Cheques Suspended 0
+2025-08-31 19:51:39,764 - ERROR - Error merging section data for 'Total Count of Cheques Suspended 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,764 - INFO - Found section: 6. Stock Purchases
+2025-08-31 19:51:39,764 - INFO - Found section: Total 776144.000 73366338.36
+2025-08-31 19:51:39,764 - ERROR - Error merging section data for 'Total 776144.000 73366338.36': list indices must be integers or slices, not str
+2025-08-31 19:51:39,764 - INFO - Found section: Total 0.000 0.00
+2025-08-31 19:51:39,765 - ERROR - Error merging section data for 'Total 0.000 0.00': list indices must be integers or slices, not str
+2025-08-31 19:51:39,765 - INFO - Found section: 7. Stock Issues
+2025-08-31 19:51:39,765 - INFO - Found section: Count of Issues Authorised
+2025-08-31 19:51:39,765 - INFO - Found section: 136345. 136501 136502 136502. 136503 136504 136505 136506 136507
+2025-08-31 19:51:39,766 - INFO - Found section: 140534. 140535 140536 140537 140538 140539 140540 140541 140551
+2025-08-31 19:51:39,766 - INFO - Found section: 141260. 141301 141304 141351 141367 141372 141373 141376 141379
+2025-08-31 19:51:39,766 - INFO - Found section: 141647. 141648 141650 141651 141652 141653 141654 141657 141671
+2025-08-31 19:51:39,766 - INFO - Found section: 124293. 126963 128831. 128844. 128919 131081. 132587. 132930 132931.
+2025-08-31 19:51:39,767 - INFO - Found section: 137164. 137170. 137550. 138447. 139103. 139903. 139910. 139915. 139982.
+2025-08-31 19:51:39,767 - INFO - Found section: Total Count of Issues Authorised 1714
+2025-08-31 19:51:39,767 - ERROR - Error merging section data for 'Total Count of Issues Authorised 1714': list indices must be integers or slices, not str
+2025-08-31 19:51:39,767 - INFO - Found section: Count of Issue Transactions Authorised
+2025-08-31 19:51:39,767 - INFO - Found section: Total Count of Issue Transactions Authorised 6734
+2025-08-31 19:51:39,767 - INFO - Found section: Count of Fuel Issues Authorised
+2025-08-31 19:51:39,767 - INFO - Found section: Total Count of Fuel Issues Authorised 0
+2025-08-31 19:51:39,768 - INFO - Found section: Count of Fuel Issue Transactions Authorised
+2025-08-31 19:51:39,768 - INFO - Found section: Total Count of Fuel Issue Transactions Authorised 0
+2025-08-31 19:51:39,768 - ERROR - Error merging section data for 'Total Count of Fuel Issue Transactions Authorised 0': list indices must be integers or slices, not str
+2025-08-31 19:51:39,768 - INFO - Found section: Total 853143.500 60319181.22 6734
+2025-08-31 19:51:39,768 - ERROR - Error merging section data for 'Total 853143.500 60319181.22 6734': list indices must be integers or slices, not str
+2025-08-31 19:51:39,769 - INFO - Found section: Total 0.000 0.00 0
+2025-08-31 19:51:39,772 - ERROR - Error merging section data for 'Total 0.000 0.00 0': list indices must be integers or slices, not str
+2025-08-31 19:51:40,058 - INFO - Created 6 cross-references
+2025-08-31 19:51:40,062 - INFO - Saved supplier activities: 34 records
+2025-08-31 19:51:40,064 - INFO - Saved cross-reference data: 6 records
+2025-08-31 19:51:40,065 - INFO - Saved report info
+2025-08-31 19:51:40,070 - INFO - Saved raw sections: 55 sections
+2025-08-31 19:51:40,070 - INFO - Processing: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:51:40,070 - INFO - Parsing HR990 PDF: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:51:52,239 - INFO - Found section: 1. Suppliers
+2025-08-31 19:51:52,239 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:51:52,239 - INFO - Found section: Total Count of Supplier Additions 220
+2025-08-31 19:51:52,240 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:51:52,240 - INFO - Found section: Total Count of Supplier/Field Amendments 130 216
+2025-08-31 19:51:52,240 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:51:52,240 - INFO - Found section: Total Count of Suppliers Deleted 1
+2025-08-31 19:51:52,240 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:51:52,241 - INFO - Found section: Total Count of Active Suppliers 8094
+2025-08-31 19:51:52,241 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:51:52,241 - INFO - Found section: Total Count of Inactive Suppliers 140
+2025-08-31 19:51:52,241 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:51:52,242 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:51:52,242 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:51:52,242 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:51:52,242 - INFO - Found section: 2. Orders
+2025-08-31 19:51:52,244 - INFO - Found section: Total Count and Amt of Orders Processed 2526 383878595.69
+2025-08-31 19:51:52,244 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:51:52,244 - INFO - Found section: Total Count of Order Transactions Processed 3091
+2025-08-31 19:51:52,246 - ERROR - Error merging section data for 'Total Count of Order Transactions Processed 3091': list indices must be integers or slices, not str
+2025-08-31 19:51:52,246 - INFO - Found section: Total Count and Amt of Orders Authorised 2523 383350887.69
+2025-08-31 19:51:52,247 - INFO - Found section: Count of Order Transactions Authorised
+2025-08-31 19:51:52,247 - INFO - Found section: Total Count of Order Transactions Authorised 3088
+2025-08-31 19:51:52,247 - ERROR - Error merging section data for 'Total Count of Order Transactions Authorised 3088': list indices must be integers or slices, not str
+2025-08-31 19:51:52,248 - INFO - Found section: Total Count and Amt of Orders Cancelled 73 18094140.82
+2025-08-31 19:51:52,248 - INFO - Found section: Count of Order Transactions Cancelled
+2025-08-31 19:51:52,248 - INFO - Found section: Total Count of Order Transactions Cancelled 116
+2025-08-31 19:51:52,249 - ERROR - Error merging section data for 'Total Count of Order Transactions Cancelled 116': list indices must be integers or slices, not str
+2025-08-31 19:51:52,249 - INFO - Found section: Total Count and Amt of Orders Unauthorised 95 180000492.74
+2025-08-31 19:51:52,249 - INFO - Found section: 3. Goods Received Notes
+2025-08-31 19:51:52,249 - INFO - Found section: Count of GRNs Processed
+2025-08-31 19:51:52,251 - INFO - Found section: Total Count of GRNs Processed 2181
+2025-08-31 19:51:52,251 - INFO - Found section: Count of GRN Transactions Processed
+2025-08-31 19:51:52,251 - INFO - Found section: Total Count of GRN Transactions Processed 2614
+2025-08-31 19:51:52,252 - INFO - Found section: Count of GRNs Authorised
+2025-08-31 19:51:52,253 - INFO - Found section: Total Count of GRNs Authorised 2179
+2025-08-31 19:51:52,254 - INFO - Found section: Count of GRN Transactions Authorised
+2025-08-31 19:51:52,254 - INFO - Found section: Total Count of GRN Transactions Authorised 2611
+2025-08-31 19:51:52,254 - INFO - Found section: Count of GRNs Invoiced
+2025-08-31 19:51:52,256 - INFO - Found section: Total Count of GRNs Invoiced 2179
+2025-08-31 19:51:52,256 - INFO - Found section: 4. Invoices
+2025-08-31 19:51:52,257 - INFO - Found section: Count of Invoices Processed
+2025-08-31 19:51:52,257 - INFO - Found section: Total Creditor Payments 2
+2025-08-31 19:51:52,257 - ERROR - Error merging section data for 'Total Creditor Payments 2': list indices must be integers or slices, not str
+2025-08-31 19:51:52,257 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:52,257 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:52,258 - INFO - Found section: Total Credit Note Payments 8
+2025-08-31 19:51:52,259 - ERROR - Error merging section data for 'Total Credit Note Payments 8': list indices must be integers or slices, not str
+2025-08-31 19:51:52,259 - INFO - Found section: Total Sundry Payments 1305
+2025-08-31 19:51:52,261 - ERROR - Error merging section data for 'Total Sundry Payments 1305': list indices must be integers or slices, not str
+2025-08-31 19:51:52,262 - INFO - Found section: Total Standing Payments 4545
+2025-08-31 19:51:52,262 - ERROR - Error merging section data for 'Total Standing Payments 4545': list indices must be integers or slices, not str
+2025-08-31 19:51:52,262 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:52,262 - ERROR - Error merging section data for 'Total Civil Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,262 - INFO - Found section: Count of Invoices Authorised
+2025-08-31 19:51:52,263 - INFO - Found section: Total Creditor Payments 2
+2025-08-31 19:51:52,263 - ERROR - Error merging section data for 'Total Creditor Payments 2': list indices must be integers or slices, not str
+2025-08-31 19:51:52,263 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:52,263 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:52,263 - INFO - Found section: Total Credit Note Payments 7
+2025-08-31 19:51:52,264 - ERROR - Error merging section data for 'Total Credit Note Payments 7': list indices must be integers or slices, not str
+2025-08-31 19:51:52,265 - INFO - Found section: Total Sundry Payments 1286
+2025-08-31 19:51:52,267 - ERROR - Error merging section data for 'Total Sundry Payments 1286': list indices must be integers or slices, not str
+2025-08-31 19:51:52,267 - INFO - Found section: Total Standing Payments 4545
+2025-08-31 19:51:52,268 - ERROR - Error merging section data for 'Total Standing Payments 4545': list indices must be integers or slices, not str
+2025-08-31 19:51:52,268 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:52,268 - INFO - Found section: Count of Transactions Processed
+2025-08-31 19:51:52,268 - INFO - Found section: Total Creditor Payments 3
+2025-08-31 19:51:52,268 - ERROR - Error merging section data for 'Total Creditor Payments 3': list indices must be integers or slices, not str
+2025-08-31 19:51:52,268 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:52,269 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:52,269 - INFO - Found section: Total Credit Note Payments 8
+2025-08-31 19:51:52,269 - ERROR - Error merging section data for 'Total Credit Note Payments 8': list indices must be integers or slices, not str
+2025-08-31 19:51:52,269 - INFO - Found section: Total Sundry Payments 13412
+2025-08-31 19:51:52,269 - ERROR - Error merging section data for 'Total Sundry Payments 13412': list indices must be integers or slices, not str
+2025-08-31 19:51:52,269 - INFO - Found section: Total Standing Payments 4545
+2025-08-31 19:51:52,270 - ERROR - Error merging section data for 'Total Standing Payments 4545': list indices must be integers or slices, not str
+2025-08-31 19:51:52,270 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:52,270 - INFO - Found section: Count of Transactions Authorised
+2025-08-31 19:51:52,270 - INFO - Found section: Total Creditor Payments 3
+2025-08-31 19:51:52,270 - ERROR - Error merging section data for 'Total Creditor Payments 3': list indices must be integers or slices, not str
+2025-08-31 19:51:52,270 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:51:52,270 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:51:52,270 - INFO - Found section: Total Credit Note Payments 7
+2025-08-31 19:51:52,271 - ERROR - Error merging section data for 'Total Credit Note Payments 7': list indices must be integers or slices, not str
+2025-08-31 19:51:52,271 - INFO - Found section: Total Sundry Payments 12734
+2025-08-31 19:51:52,271 - ERROR - Error merging section data for 'Total Sundry Payments 12734': list indices must be integers or slices, not str
+2025-08-31 19:51:52,271 - INFO - Found section: Total Standing Payments 4545
+2025-08-31 19:51:52,271 - ERROR - Error merging section data for 'Total Standing Payments 4545': list indices must be integers or slices, not str
+2025-08-31 19:51:52,271 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:51:52,271 - INFO - Found section: 5. Cheques
+2025-08-31 19:51:52,271 - INFO - Found section: Count of Creditor Payments 7331
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:52,272 - INFO - Found section: Total Count of Cheques Presented 7331
+2025-08-31 19:51:52,272 - ERROR - Error merging section data for 'Total Count of Cheques Presented 7331': list indices must be integers or slices, not str
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Creditor Payments 3
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:52,272 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:52,273 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:52,273 - INFO - Found section: Total Count of Cheques Cancelled 3
+2025-08-31 19:51:52,273 - ERROR - Error merging section data for 'Total Count of Cheques Cancelled 3': list indices must be integers or slices, not str
+2025-08-31 19:51:52,273 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:52,273 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:52,273 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Total Count of Cheques Re-Issued 0
+2025-08-31 19:51:52,274 - ERROR - Error merging section data for 'Total Count of Cheques Re-Issued 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,274 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:52,274 - INFO - Found section: Total Count of Cheques Stale 0
+2025-08-31 19:51:52,275 - ERROR - Error merging section data for 'Total Count of Cheques Stale 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,275 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:51:52,275 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:51:52,275 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:51:52,275 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:51:52,275 - INFO - Found section: Total Count of Cheques Suspended 0
+2025-08-31 19:51:52,276 - ERROR - Error merging section data for 'Total Count of Cheques Suspended 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,276 - INFO - Found section: 6. Stock Purchases
+2025-08-31 19:51:52,276 - INFO - Found section: Total 741865.100 68465913.83
+2025-08-31 19:51:52,276 - ERROR - Error merging section data for 'Total 741865.100 68465913.83': list indices must be integers or slices, not str
+2025-08-31 19:51:52,276 - INFO - Found section: Total 0.000 0.00
+2025-08-31 19:51:52,276 - ERROR - Error merging section data for 'Total 0.000 0.00': list indices must be integers or slices, not str
+2025-08-31 19:51:52,277 - INFO - Found section: 7. Stock Issues
+2025-08-31 19:51:52,277 - INFO - Found section: Count of Issues Authorised
+2025-08-31 19:51:52,277 - INFO - Found section: 128940. 128944 128945 128946 128949 128950 128953 128956 128957
+2025-08-31 19:51:52,277 - INFO - Found section: 136532. 13655 13656 13657 13658 13666 13667 13676 13686
+2025-08-31 19:51:52,278 - INFO - Found section: 141966. 141967 141968 141969 141969. 141970 141972 141973 141976
+2025-08-31 19:51:52,278 - INFO - Found section: 144810. 144811 144812 144813 144814 144815 144817 144818 144819
+2025-08-31 19:51:52,278 - INFO - Found section: 144838. 144839 144840 144841 144842 144843 144843. 144844 144851
+2025-08-31 19:51:52,278 - INFO - Found section: 19742. 210285 49244 51106 51108
+2025-08-31 19:51:52,279 - INFO - Found section: Total Count of Issues Authorised 1729
+2025-08-31 19:51:52,279 - INFO - Found section: Count of Issue Transactions Authorised
+2025-08-31 19:51:52,279 - INFO - Found section: Total Count of Issue Transactions Authorised 6419
+2025-08-31 19:51:52,279 - INFO - Found section: Count of Fuel Issues Authorised
+2025-08-31 19:51:52,279 - INFO - Found section: Total Count of Fuel Issues Authorised 0
+2025-08-31 19:51:52,279 - INFO - Found section: Count of Fuel Issue Transactions Authorised
+2025-08-31 19:51:52,279 - INFO - Found section: Total Count of Fuel Issue Transactions Authorised 0
+2025-08-31 19:51:52,279 - ERROR - Error merging section data for 'Total Count of Fuel Issue Transactions Authorised 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,280 - INFO - Found section: Total 725655.000 57626427.86 6419
+2025-08-31 19:51:52,280 - ERROR - Error merging section data for 'Total 725655.000 57626427.86 6419': list indices must be integers or slices, not str
+2025-08-31 19:51:52,280 - INFO - Found section: Total 0.000 0.00 0
+2025-08-31 19:51:52,280 - ERROR - Error merging section data for 'Total 0.000 0.00 0': list indices must be integers or slices, not str
+2025-08-31 19:51:52,549 - INFO - Created 6 cross-references
+2025-08-31 19:51:52,551 - INFO - Saved supplier activities: 35 records
+2025-08-31 19:51:52,552 - INFO - Saved cross-reference data: 6 records
+2025-08-31 19:51:52,553 - INFO - Saved report info
+2025-08-31 19:51:52,561 - INFO - Saved raw sections: 55 sections
+2025-08-31 19:51:52,561 - INFO - Processing: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:51:52,561 - INFO - Parsing HR990 PDF: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:52:04,929 - INFO - Found section: 1. Suppliers
+2025-08-31 19:52:04,929 - INFO - Found section: Count of Supplier Additions
+2025-08-31 19:52:04,929 - INFO - Found section: Total Count of Supplier Additions 375
+2025-08-31 19:52:04,930 - INFO - Found section: Count of Supplier/Field Amendments
+2025-08-31 19:52:04,930 - INFO - Found section: Total Count of Supplier/Field Amendments 162 263
+2025-08-31 19:52:04,930 - INFO - Found section: Count of Suppliers Deleted
+2025-08-31 19:52:04,930 - INFO - Found section: Total Count of Suppliers Deleted 0
+2025-08-31 19:52:04,931 - INFO - Found section: Count of Active Suppliers
+2025-08-31 19:52:04,931 - INFO - Found section: Total Count of Active Suppliers 8425
+2025-08-31 19:52:04,931 - INFO - Found section: Count of Inactive Suppliers
+2025-08-31 19:52:04,931 - INFO - Found section: Total Count of Inactive Suppliers 173
+2025-08-31 19:52:04,931 - INFO - Found section: Count of Ceded Suppliers
+2025-08-31 19:52:04,932 - INFO - Found section: Total Count of Ceded Suppliers 0
+2025-08-31 19:52:04,932 - INFO - Found section: Count of Liquidated Suppliers
+2025-08-31 19:52:04,932 - INFO - Found section: Total Count of Liquidated Suppliers 1
+2025-08-31 19:52:04,932 - INFO - Found section: 2. Orders
+2025-08-31 19:52:04,934 - INFO - Found section: Total Count and Amt of Orders Processed 2152 357748340.34
+2025-08-31 19:52:04,934 - INFO - Found section: Count of Order Transactions Processed
+2025-08-31 19:52:04,935 - INFO - Found section: Total Count of Order Transactions Processed 2697
+2025-08-31 19:52:04,935 - ERROR - Error merging section data for 'Total Count of Order Transactions Processed 2697': list indices must be integers or slices, not str
+2025-08-31 19:52:04,936 - INFO - Found section: Total Count and Amt of Orders Authorised 2133 355634018.09
+2025-08-31 19:52:04,936 - ERROR - Error merging section data for 'Total Count and Amt of Orders Authorised 2133 355634018.09': list indices must be integers or slices, not str
+2025-08-31 19:52:04,936 - INFO - Found section: Count of Order Transactions Authorised
+2025-08-31 19:52:04,936 - INFO - Found section: Total Count of Order Transactions Authorised 2674
+2025-08-31 19:52:04,937 - ERROR - Error merging section data for 'Total Count of Order Transactions Authorised 2674': list indices must be integers or slices, not str
+2025-08-31 19:52:04,937 - INFO - Found section: Total Count and Amt of Orders Cancelled 58 18761502.01
+2025-08-31 19:52:04,937 - ERROR - Error merging section data for 'Total Count and Amt of Orders Cancelled 58 18761502.01': list indices must be integers or slices, not str
+2025-08-31 19:52:04,937 - INFO - Found section: Count of Order Transactions Cancelled
+2025-08-31 19:52:04,937 - INFO - Found section: Total Count of Order Transactions Cancelled 86
+2025-08-31 19:52:04,938 - ERROR - Error merging section data for 'Total Count of Order Transactions Cancelled 86': list indices must be integers or slices, not str
+2025-08-31 19:52:04,938 - INFO - Found section: Total Count and Amt of Orders Unauthorised 195 50758559.02
+2025-08-31 19:52:04,938 - INFO - Found section: 3. Goods Received Notes
+2025-08-31 19:52:04,938 - INFO - Found section: Count of GRNs Processed
+2025-08-31 19:52:04,940 - INFO - Found section: Total Count of GRNs Processed 1637
+2025-08-31 19:52:04,940 - INFO - Found section: Count of GRN Transactions Processed
+2025-08-31 19:52:04,940 - INFO - Found section: Total Count of GRN Transactions Processed 1969
+2025-08-31 19:52:04,940 - INFO - Found section: Count of GRNs Authorised
+2025-08-31 19:52:04,942 - INFO - Found section: Total Count of GRNs Authorised 1634
+2025-08-31 19:52:04,942 - INFO - Found section: Count of GRN Transactions Authorised
+2025-08-31 19:52:04,942 - INFO - Found section: Total Count of GRN Transactions Authorised 1966
+2025-08-31 19:52:04,943 - INFO - Found section: Count of GRNs Invoiced
+2025-08-31 19:52:04,944 - INFO - Found section: Total Count of GRNs Invoiced 1634
+2025-08-31 19:52:04,944 - INFO - Found section: 4. Invoices
+2025-08-31 19:52:04,944 - INFO - Found section: Count of Invoices Processed
+2025-08-31 19:52:04,945 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:52:04,945 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,945 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:52:04,945 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:52:04,945 - INFO - Found section: Total Credit Note Payments 5
+2025-08-31 19:52:04,947 - ERROR - Error merging section data for 'Total Credit Note Payments 5': list indices must be integers or slices, not str
+2025-08-31 19:52:04,948 - INFO - Found section: Total Sundry Payments 3522
+2025-08-31 19:52:04,951 - ERROR - Error merging section data for 'Total Sundry Payments 3522': list indices must be integers or slices, not str
+2025-08-31 19:52:04,951 - INFO - Found section: Total Standing Payments 4563
+2025-08-31 19:52:04,951 - ERROR - Error merging section data for 'Total Standing Payments 4563': list indices must be integers or slices, not str
+2025-08-31 19:52:04,951 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:52:04,951 - ERROR - Error merging section data for 'Total Civil Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,951 - INFO - Found section: Count of Invoices Authorised
+2025-08-31 19:52:04,951 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:52:04,952 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,952 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:52:04,952 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:52:04,952 - INFO - Found section: Total Credit Note Payments 5
+2025-08-31 19:52:04,954 - ERROR - Error merging section data for 'Total Credit Note Payments 5': list indices must be integers or slices, not str
+2025-08-31 19:52:04,954 - INFO - Found section: Total Sundry Payments 3512
+2025-08-31 19:52:04,957 - ERROR - Error merging section data for 'Total Sundry Payments 3512': list indices must be integers or slices, not str
+2025-08-31 19:52:04,957 - INFO - Found section: Total Standing Payments 4563
+2025-08-31 19:52:04,958 - ERROR - Error merging section data for 'Total Standing Payments 4563': list indices must be integers or slices, not str
+2025-08-31 19:52:04,958 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:52:04,958 - INFO - Found section: Count of Transactions Processed
+2025-08-31 19:52:04,958 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:52:04,959 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,959 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:52:04,959 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:52:04,959 - INFO - Found section: Total Credit Note Payments 5
+2025-08-31 19:52:04,959 - ERROR - Error merging section data for 'Total Credit Note Payments 5': list indices must be integers or slices, not str
+2025-08-31 19:52:04,959 - INFO - Found section: Total Sundry Payments 14122
+2025-08-31 19:52:04,960 - ERROR - Error merging section data for 'Total Sundry Payments 14122': list indices must be integers or slices, not str
+2025-08-31 19:52:04,960 - INFO - Found section: Total Standing Payments 4563
+2025-08-31 19:52:04,960 - ERROR - Error merging section data for 'Total Standing Payments 4563': list indices must be integers or slices, not str
+2025-08-31 19:52:04,960 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:52:04,960 - INFO - Found section: Count of Transactions Authorised
+2025-08-31 19:52:04,960 - INFO - Found section: Total Creditor Payments 0
+2025-08-31 19:52:04,960 - ERROR - Error merging section data for 'Total Creditor Payments 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,961 - INFO - Found section: Total Debit Note Payments 1
+2025-08-31 19:52:04,961 - ERROR - Error merging section data for 'Total Debit Note Payments 1': list indices must be integers or slices, not str
+2025-08-31 19:52:04,961 - INFO - Found section: Total Credit Note Payments 5
+2025-08-31 19:52:04,961 - ERROR - Error merging section data for 'Total Credit Note Payments 5': list indices must be integers or slices, not str
+2025-08-31 19:52:04,961 - INFO - Found section: Total Sundry Payments 13764
+2025-08-31 19:52:04,961 - ERROR - Error merging section data for 'Total Sundry Payments 13764': list indices must be integers or slices, not str
+2025-08-31 19:52:04,962 - INFO - Found section: Total Standing Payments 4563
+2025-08-31 19:52:04,962 - ERROR - Error merging section data for 'Total Standing Payments 4563': list indices must be integers or slices, not str
+2025-08-31 19:52:04,962 - INFO - Found section: Total Civil Payments 0
+2025-08-31 19:52:04,962 - INFO - Found section: 5. Cheques
+2025-08-31 19:52:04,962 - INFO - Found section: Count of Creditor Payments 9414
+2025-08-31 19:52:04,962 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:52:04,962 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:52:04,962 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:52:04,962 - INFO - Found section: Total Count of Cheques Presented 9414
+2025-08-31 19:52:04,963 - ERROR - Error merging section data for 'Total Count of Cheques Presented 9414': list indices must be integers or slices, not str
+2025-08-31 19:52:04,963 - INFO - Found section: Count of Creditor Payments 1
+2025-08-31 19:52:04,963 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:52:04,963 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:52:04,963 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:52:04,963 - INFO - Found section: Total Count of Cheques Cancelled 1
+2025-08-31 19:52:04,963 - ERROR - Error merging section data for 'Total Count of Cheques Cancelled 1': list indices must be integers or slices, not str
+2025-08-31 19:52:04,963 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Total Count of Cheques Re-Issued 0
+2025-08-31 19:52:04,964 - ERROR - Error merging section data for 'Total Count of Cheques Re-Issued 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:52:04,964 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Total Count of Cheques Stale 0
+2025-08-31 19:52:04,965 - ERROR - Error merging section data for 'Total Count of Cheques Stale 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,965 - INFO - Found section: Count of Creditor Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Count of Sundry Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Count of Standing Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Count of Civil Payments 0
+2025-08-31 19:52:04,965 - INFO - Found section: Total Count of Cheques Suspended 0
+2025-08-31 19:52:04,965 - ERROR - Error merging section data for 'Total Count of Cheques Suspended 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,966 - INFO - Found section: 6. Stock Purchases
+2025-08-31 19:52:04,966 - INFO - Found section: Total 479403.000 48029851.01
+2025-08-31 19:52:04,966 - ERROR - Error merging section data for 'Total 479403.000 48029851.01': list indices must be integers or slices, not str
+2025-08-31 19:52:04,966 - INFO - Found section: Total 0.000 0.00
+2025-08-31 19:52:04,966 - ERROR - Error merging section data for 'Total 0.000 0.00': list indices must be integers or slices, not str
+2025-08-31 19:52:04,966 - INFO - Found section: 7. Stock Issues
+2025-08-31 19:52:04,966 - INFO - Found section: Count of Issues Authorised
+2025-08-31 19:52:04,967 - INFO - Found section: 146187. 146188 146189 146190 146191 146191. 146192 146192. 146194
+2025-08-31 19:52:04,967 - INFO - Found section: 146194. 146195 146196 146196. 146197 146198 146200 146354 146356
+2025-08-31 19:52:04,967 - INFO - Found section: 147133. 147134 147135 147136 147138 147139 147140 147141 147142
+2025-08-31 19:52:04,967 - INFO - Found section: Total Count of Issues Authorised 1435
+2025-08-31 19:52:04,968 - INFO - Found section: Count of Issue Transactions Authorised
+2025-08-31 19:52:04,968 - INFO - Found section: Total Count of Issue Transactions Authorised 5756
+2025-08-31 19:52:04,968 - INFO - Found section: Count of Fuel Issues Authorised
+2025-08-31 19:52:04,968 - INFO - Found section: Total Count of Fuel Issues Authorised 0
+2025-08-31 19:52:04,968 - INFO - Found section: Count of Fuel Issue Transactions Authorised
+2025-08-31 19:52:04,968 - INFO - Found section: Total Count of Fuel Issue Transactions Authorised 0
+2025-08-31 19:52:04,968 - ERROR - Error merging section data for 'Total Count of Fuel Issue Transactions Authorised 0': list indices must be integers or slices, not str
+2025-08-31 19:52:04,969 - INFO - Found section: Total 581391.000 50996086.28 5756
+2025-08-31 19:52:04,969 - ERROR - Error merging section data for 'Total 581391.000 50996086.28 5756': list indices must be integers or slices, not str
+2025-08-31 19:52:04,969 - INFO - Found section: Total 0.000 0.00 0
+2025-08-31 19:52:04,969 - ERROR - Error merging section data for 'Total 0.000 0.00 0': list indices must be integers or slices, not str
+2025-08-31 19:52:05,252 - INFO - Created 6 cross-references
+2025-08-31 19:52:05,254 - INFO - Saved supplier activities: 35 records
+2025-08-31 19:52:05,256 - INFO - Saved cross-reference data: 6 records
+2025-08-31 19:52:05,257 - INFO - Saved report info
+2025-08-31 19:52:05,265 - INFO - Saved raw sections: 52 sections
