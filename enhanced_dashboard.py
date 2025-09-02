@@ -279,10 +279,10 @@ class AdvancedStockDashboard:
     def load_linked_data(self, filters=None):
         """Load all data with proper business logic linkages applied."""
         # Load base datasets
-        grn_df = self.load_data("hr995_grn.csv")
-        issue_df = self.load_data("hr995_issue.csv") 
-        voucher_df = self.load_data("hr995_voucher.csv")
-        hr390_df = self.load_data("output/individual_hr390_movement_data.csv")
+        grn_df = self.load_data("individual_hr995grn.csv")
+        issue_df = self.load_data("individual_hr995issue.csv") 
+        voucher_df = self.load_data("individual_hr995vouch.csv")
+        hr390_df = self.load_data("individual_hr390_movement_data.csv")
         hr185_df = self.load_data("individual_hr185_transactions.csv")
         
         # Apply normalization for proper linkages
@@ -438,9 +438,9 @@ class AdvancedStockDashboard:
         st.markdown('<h1 class="main-header">📊 Advanced Stock Analytics Dashboard</h1>', unsafe_allow_html=True)
         
         # Load key datasets
-        grn_df = self.load_filtered_data("hr995_grn.csv", filters)
-        issue_df = self.load_filtered_data("hr995_issue.csv", filters)
-        voucher_df = self.load_data("hr995_voucher.csv")
+        grn_df = self.load_filtered_data("individual_hr995grn.csv", filters)
+        issue_df = self.load_filtered_data("individual_hr995issue.csv", filters)
+        voucher_df = self.load_data("individual_hr995vouch.csv")
         audit_df = self.load_data("objective_2_stock_audit_trail.csv")
         
         # Load PDF datasets
@@ -562,8 +562,8 @@ class AdvancedStockDashboard:
         """Create comprehensive financial analytics section."""
         st.header("💰 Financial Analytics")
         
-        grn_df = self.load_filtered_data("hr995_grn.csv", filters)
-        voucher_df = self.load_filtered_data("hr995_voucher.csv", filters)
+        grn_df = self.load_filtered_data("individual_hr995grn.csv", filters)
+        voucher_df = self.load_filtered_data("individual_hr995vouch.csv", filters)
         
         # Show filter status
         if filters and filters.get('supplier') and filters['supplier'] != "All Suppliers":
@@ -886,8 +886,8 @@ class AdvancedStockDashboard:
         """Create inventory analytics section."""
         st.header("📦 Inventory Analytics")
         
-        grn_df = self.load_filtered_data("hr995_grn.csv", filters)
-        issue_df = self.load_filtered_data("hr995_issue.csv", filters)
+        grn_df = self.load_filtered_data("individual_hr995grn.csv", filters)
+        issue_df = self.load_filtered_data("individual_hr995issue.csv", filters)
         stock_df = self.load_filtered_data("stock_adjustments.csv", filters)
         
         # Show filter status
@@ -1063,7 +1063,7 @@ class AdvancedStockDashboard:
         st.header("🏪 Supplier Analytics")
         
         suppliers_df = self.load_filtered_data("suppliers.csv", filters)
-        grn_df = self.load_filtered_data("hr995_grn.csv", filters)
+        grn_df = self.load_filtered_data("individual_hr995grn.csv", filters)
         
         # Show filter status
         if filters and filters.get('supplier') and filters['supplier'] != "All Suppliers":
@@ -1215,7 +1215,7 @@ class AdvancedStockDashboard:
         # Load additional operational datasets
         audit_df = self.load_data("objective_2_stock_audit_trail.csv")
         process_df = self.load_data("objective_4_end_to_end_process.csv")
-        voucher_df = self.load_data("hr995_voucher.csv")
+        voucher_df = self.load_data("individual_hr995vouch.csv")
         
         # Create tabs for different operational views
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -1598,7 +1598,7 @@ class AdvancedStockDashboard:
         st.sidebar.markdown("### 🏪 Supplier Filter")
         
         # Get all unique suppliers from GRN data
-        grn_df = self.load_data("hr995_grn.csv")
+        grn_df = self.load_data("individual_hr995grn.csv")
         supplier_options = ["All Suppliers"]
         
         if not grn_df.empty and 'supplier_name' in grn_df.columns:
@@ -1675,7 +1675,7 @@ class AdvancedStockDashboard:
         hr185_df = linked_data['hr185']
         
         # Load voucher data separately (not filtered for anomaly detection)
-        voucher_df = self.load_data("hr995_voucher.csv")
+        voucher_df = self.load_data("individual_hr995vouch.csv")
         
         if not any(len(df) > 0 if df is not None else False for df in [grn_df, issue_df, voucher_df]):
             st.warning("No data available for anomaly detection.")
@@ -1863,37 +1863,48 @@ class AdvancedStockDashboard:
                     st.dataframe(pd.DataFrame(issue_missing), use_container_width=True, hide_index=True)
         
         with col2:
-            st.markdown("### ⚠️ Data Inconsistencies")
+            st.markdown("### 📊 Data Quality Overview")
             
-            # Negative values
-            negative_issues = []
+            # True inconsistencies (negative values that shouldn't exist)
+            true_issues = []
             
             if not grn_df.empty and 'nett_grn_amt' in grn_df.columns:
                 negative_grn = (pd.to_numeric(grn_df['nett_grn_amt'], errors='coerce') < 0).sum()
                 if negative_grn > 0:
-                    negative_issues.append(f"🔴 {negative_grn} GRN records with negative amounts")
+                    true_issues.append(f"🔴 {negative_grn} GRN records with negative amounts")
             
             if not issue_df.empty and 'quantity' in issue_df.columns:
                 negative_qty = (pd.to_numeric(issue_df['quantity'], errors='coerce') < 0).sum()
                 if negative_qty > 0:
-                    negative_issues.append(f"🔴 {negative_qty} Issue records with negative quantities")
+                    true_issues.append(f"🔴 {negative_qty} Issue records with negative quantities")
             
-            # Duplicate detection
+            # Normal business patterns (not inconsistencies)
+            st.markdown("#### 📋 Normal Business Patterns")
+            business_patterns = []
+            
             if not grn_df.empty and 'grn_no' in grn_df.columns:
                 duplicate_grns = grn_df['grn_no'].duplicated().sum()
                 if duplicate_grns > 0:
-                    negative_issues.append(f"🟡 {duplicate_grns} duplicate GRN numbers")
+                    business_patterns.append(f"✅ {duplicate_grns} GRN line items (multiple items per GRN)")
             
             if not issue_df.empty and 'requisition_no' in issue_df.columns:
                 duplicate_reqs = issue_df['requisition_no'].duplicated().sum()
                 if duplicate_reqs > 0:
-                    negative_issues.append(f"🟡 {duplicate_reqs} duplicate requisition numbers")
+                    business_patterns.append(f"✅ {duplicate_reqs} Requisition line items (multiple items per requisition)")
             
-            if negative_issues:
-                for issue in negative_issues:
+            # Display results
+            if true_issues:
+                st.markdown("#### ⚠️ Data Issues Requiring Attention")
+                for issue in true_issues:
                     st.markdown(f"- {issue}")
             else:
-                st.success("✅ No major data inconsistencies detected")
+                st.success("✅ No data quality issues detected")
+                
+            if business_patterns:
+                for pattern in business_patterns:
+                    st.markdown(f"- {pattern}")
+            
+            st.info("💡 **Note**: Multiple line items per document (GRN/Requisition) are normal business practice, not data inconsistencies.")
     
     def create_timing_anomalies(self, grn_df, issue_df):
         """Detect timing-related anomalies in transaction processing."""
@@ -2999,7 +3010,7 @@ class AdvancedStockDashboard:
             st.markdown("""
             <div class="metric-card">
                 <h4>🔍 Data Quality</h4>
-                <p>Check for negative stock levels, unusual date patterns, and data inconsistencies</p>
+                <p>Check for negative stock levels, unusual date patterns, and actual data quality issues</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -3305,7 +3316,7 @@ class AdvancedStockDashboard:
         st.info("🎯 **Focus Area**: Personal Protective Equipment (PPE) and Electrical materials for inconsistency detection")
         
         # Load GRN data for item details
-        grn_df = self.load_data('hr995_grn.csv')
+        grn_df = self.load_data('individual_hr995grn.csv')
         
         if grn_df is None:
             st.warning("GRN data required for PPE/Electrical analysis.")

@@ -1,0 +1,62 @@
+2025-08-31 19:37:32,478 - INFO - Starting conversion process for directory: D:\data analysis\Data Hand-Over\Data Hand-Over
+2025-08-31 19:37:32,480 - INFO - Found 10 Excel files, 10 PDF files, 1 text files
+2025-08-31 19:37:32,480 - INFO - Converting Excel file: 2023 List of Suppliers.xlsx
+2025-08-31 19:37:32,688 - INFO - Processing Excel file: 2023 List of Suppliers.xlsx with 2 sheet(s)
+2025-08-31 19:37:32,755 - INFO - Successfully converted sheet 'Supplier List' to 2023 List of Suppliers_Supplier List.csv
+2025-08-31 19:37:33,131 - INFO - Successfully converted sheet '2023 SupplierOrders' to 2023 List of Suppliers_2023 SupplierOrders.csv
+2025-08-31 19:37:33,132 - INFO - Converting Excel file: 2024 List of Suppliers.xlsx
+2025-08-31 19:37:33,149 - INFO - Processing Excel file: 2024 List of Suppliers.xlsx with 2 sheet(s)
+2025-08-31 19:37:33,169 - INFO - Successfully converted sheet '2024 Supplier List' to 2024 List of Suppliers_2024 Supplier List.csv
+2025-08-31 19:37:33,219 - INFO - Successfully converted sheet '2024 Supplier Orders' to 2024 List of Suppliers_2024 Supplier Orders.csv
+2025-08-31 19:37:33,220 - INFO - Converting Excel file: HR995grn.xlsx
+2025-08-31 19:37:33,363 - INFO - Processing Excel file: HR995grn.xlsx with 1 sheet(s)
+2025-08-31 19:37:34,274 - INFO - Successfully converted sheet 'HR995grn' to HR995grn.csv
+2025-08-31 19:37:34,275 - INFO - Converting Excel file: HR995issue.xlsx
+2025-08-31 19:37:34,307 - INFO - Processing Excel file: HR995issue.xlsx with 1 sheet(s)
+2025-08-31 19:37:35,815 - INFO - Successfully converted sheet 'HR995issue' to HR995issue.csv
+2025-08-31 19:37:35,817 - INFO - Converting Excel file: HR995redund.xlsx
+2025-08-31 19:37:35,874 - INFO - Processing Excel file: HR995redund.xlsx with 1 sheet(s)
+2025-08-31 19:37:36,071 - INFO - Successfully converted sheet 'HR995redund' to HR995redund.csv
+2025-08-31 19:37:36,071 - INFO - Converting Excel file: HR995vouch.xlsx
+2025-08-31 19:37:36,339 - INFO - Processing Excel file: HR995vouch.xlsx with 1 sheet(s)
+2025-08-31 19:37:38,528 - INFO - Successfully converted sheet 'HR995vouch' to HR995vouch.csv
+2025-08-31 19:37:38,529 - INFO - Converting Excel file: Final stock list 2324.xlsx
+2025-08-31 19:37:38,578 - INFO - Processing Excel file: Final stock list 2324.xlsx with 1 sheet(s)
+2025-08-31 19:37:38,820 - INFO - Successfully converted sheet 'Stock list' to Final stock list 2324.csv
+2025-08-31 19:37:38,820 - INFO - Converting Excel file: Final stock listing 2023.xlsx
+2025-08-31 19:37:38,867 - INFO - Processing Excel file: Final stock listing 2023.xlsx with 1 sheet(s)
+2025-08-31 19:37:39,169 - INFO - Successfully converted sheet 'Sheet1' to Final stock listing 2023.csv
+2025-08-31 19:37:39,169 - INFO - Converting Excel file: Stock Adjustment item 2024.xlsx
+2025-08-31 19:37:39,216 - INFO - Processing Excel file: Stock Adjustment item 2024.xlsx with 6 sheet(s)
+2025-08-31 19:37:39,476 - INFO - Successfully converted sheet 'Stock list' to Stock Adjustment item 2024_Stock list.csv
+2025-08-31 19:37:39,523 - INFO - Successfully converted sheet 'JNLs' to Stock Adjustment item 2024_JNLs.csv
+2025-08-31 19:37:39,569 - INFO - Successfully converted sheet 'Annexure A' to Stock Adjustment item 2024_Annexure A.csv
+2025-08-31 19:37:39,618 - INFO - Successfully converted sheet 'Annexure B' to Stock Adjustment item 2024_Annexure B.csv
+2025-08-31 19:37:39,671 - INFO - Successfully converted sheet 'Workings' to Stock Adjustment item 2024_Workings.csv
+2025-08-31 19:37:39,715 - INFO - Successfully converted sheet 'Sheet2' to Stock Adjustment item 2024_Sheet2.csv
+2025-08-31 19:37:39,716 - INFO - Converting Excel file: Variance report.xlsx
+2025-08-31 19:37:39,733 - INFO - Processing Excel file: Variance report.xlsx with 1 sheet(s)
+2025-08-31 19:37:39,879 - INFO - Successfully converted sheet 'Sheet1' to Variance report.csv
+2025-08-31 19:37:39,880 - INFO - Converting PDF file: 1-HR185 - Transactions per Supplier - 202207 - 202306.pdf
+2025-08-31 19:37:39,880 - INFO - Processing PDF file: 1-HR185 - Transactions per Supplier - 202207 - 202306.pdf
+2025-08-31 19:37:44,921 - INFO - Converting PDF file: 2-HR185 - Transactions per Supplier - 202307 - 202406.pdf
+2025-08-31 19:37:44,921 - INFO - Processing PDF file: 2-HR185 - Transactions per Supplier - 202307 - 202406.pdf
+2025-08-31 19:37:46,213 - INFO - Converting PDF file: 3-HR185 - Transactions per Supplier - 202407 - 202506.pdf
+2025-08-31 19:37:46,213 - INFO - Processing PDF file: 3-HR185 - Transactions per Supplier - 202407 - 202506.pdf
+2025-08-31 19:37:50,550 - INFO - Converting PDF file: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 19:37:50,551 - INFO - Processing PDF file: HR390 - Movement per Store - 202207 - 202306.pdf
+2025-08-31 19:38:16,111 - INFO - Converting PDF file: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 19:38:16,112 - INFO - Processing PDF file: HR390 - Movement per Store - 202307 - 202406.pdf
+2025-08-31 19:38:41,067 - INFO - Converting PDF file: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 19:38:41,067 - INFO - Processing PDF file: HR390 - Movement per Store - 202407 - 202506.pdf
+2025-08-31 19:39:04,449 - INFO - Converting PDF file: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:39:04,449 - INFO - Processing PDF file: 1-HR990 - Expenditure Statistics - 202207 - 202306.pdf
+2025-08-31 19:39:17,649 - INFO - Converting PDF file: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:39:17,649 - INFO - Processing PDF file: 2-HR990 - Expenditure Statistics - 202307 - 202406.pdf
+2025-08-31 19:39:29,580 - INFO - Converting PDF file: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:39:29,581 - INFO - Processing PDF file: 3-HR990 - Expenditure Statistics - 202407 - 202506.pdf
+2025-08-31 19:39:41,763 - INFO - Converting PDF file: HD170_5558_ENQ600_4_hold.pdf
+2025-08-31 19:39:41,763 - INFO - Processing PDF file: HD170_5558_ENQ600_4_hold.pdf
+2025-08-31 19:39:42,184 - INFO - Converting text file: hr450x250726.txt
+2025-08-31 19:39:42,184 - INFO - Processing text file: hr450x250726.txt
+2025-08-31 19:39:42,271 - INFO - Conversion complete! Generated 28 CSV files
